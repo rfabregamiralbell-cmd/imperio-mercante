@@ -1,26 +1,17 @@
 {
-  "tileLayer": {
-    "url": "https://{s}.basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}{r}.png",
-    "variant": "light"
-  },
-  "defaultZoom": 3,
+  "view": { "center": [30, 0], "zoom": 3 },
   "minZoom": 2,
-  "maxZoom": 12,
-  "playerColor": "#f4c430",
-  "rivalColors": {
-    "Cofradía del Caribe": "#e74c3c",
-    "Compañía del Norte": "#3498db",
-    "Casa de Contratación": "#9b59b6",
-    "Piratas Berberiscos": "#e67e22",
-    "Galeón de Manila": "#1abc9c",
-    "Virreinato del Perú": "#c0392b"
+  "maxZoom": 14,
+  "base": {
+    "url": "https://{s}.basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}{r}.png",
+    "attribution": "© OpenStreetMap, © CARTO"
   },
-  "railwayLayer": {
+  "railway": {
     "url": "https://{s}.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png",
-    "attribution": "OpenRailwayMap"
+    "attribution": "© OpenRailwayMap"
   },
-  "seaLayer": {
+  "sea": {
     "url": "https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png",
-    "attribution": "OpenSeaMap"
+    "attribution": "© OpenSeaMap"
   }
 }

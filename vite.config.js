@@ -4,5 +4,4 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   base: '/imperio-mercante/',
   plugins: [react()],
-  test: { environment: 'node' },
 });
