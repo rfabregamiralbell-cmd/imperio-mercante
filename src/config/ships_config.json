@@ -1,0 +1,41 @@
+{
+  "_comment": "Barcos. Mercantes mueven carga; militares dan poder de combate y escolta. upgrades suben stats por nivel (hiperrealista: casco, cañones, velamen, bodega).",
+  "ships": [
+    {
+      "id": "balandra", "name": "Balandra", "class": "mercante", "icon": "⛵",
+      "cost": { "oro": 120, "madera": 40 },
+      "stats": { "bodega": 25, "velocidad": 7, "casco": 40, "canones": 2 },
+      "desc": "Pequeña y ágil. El primer paso del comercio."
+    },
+    {
+      "id": "bergantin", "name": "Bergantín", "class": "mixto", "icon": "🚤",
+      "cost": { "oro": 240, "madera": 80, "hierro": 20 },
+      "stats": { "bodega": 18, "velocidad": 9, "casco": 70, "canones": 10 },
+      "desc": "Rápido y armado. Comercia y se defiende."
+    },
+    {
+      "id": "fragata", "name": "Fragata", "class": "militar", "icon": "⚔️",
+      "cost": { "oro": 420, "madera": 120, "hierro": 60 },
+      "stats": { "bodega": 12, "velocidad": 9, "casco": 120, "canones": 28 },
+      "desc": "Buque de guerra veloz. Columna de tu armada."
+    },
+    {
+      "id": "galeon", "name": "Galeón", "class": "mercante", "icon": "🚢",
+      "cost": { "oro": 600, "madera": 200, "hierro": 40 },
+      "stats": { "bodega": 70, "velocidad": 5, "casco": 180, "canones": 18 },
+      "desc": "Gran bodega y casco recio. La mula de carga del imperio."
+    },
+    {
+      "id": "navio", "name": "Navío de Línea", "class": "militar", "icon": "🛡️",
+      "cost": { "oro": 950, "madera": 300, "hierro": 140 },
+      "stats": { "bodega": 20, "velocidad": 5, "casco": 280, "canones": 64 },
+      "desc": "Fortaleza flotante. Domina cualquier duelo de flotas."
+    }
+  ],
+  "upgrades": [
+    { "id": "casco",     "name": "Refuerzo de casco", "icon": "🪵", "stat": "casco",      "perLevel": 0.18, "max": 4, "costPerLevel": { "oro": 80, "madera": 40 } },
+    { "id": "canones",   "name": "Baterías nuevas",   "icon": "💣", "stat": "canones",    "perLevel": 0.20, "max": 4, "costPerLevel": { "oro": 120, "hierro": 40 } },
+    { "id": "velamen",   "name": "Velamen mejorado",  "icon": "⛵", "stat": "velocidad",  "perLevel": 0.15, "max": 4, "costPerLevel": { "oro": 90, "madera": 30 } },
+    { "id": "bodega",    "name": "Bodega ampliada",   "icon": "📦", "stat": "bodega",     "perLevel": 0.25, "max": 4, "costPerLevel": { "oro": 70, "madera": 50 } }
+  ]
+}

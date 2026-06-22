@@ -1,0 +1,15 @@
+{
+  "tileLayer": { "url": "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" },
+  "defaultZoom": 3,
+  "minZoom": 2,
+  "maxZoom": 12,
+  "playerColor": "#f4c430",
+  "rivalColors": {
+    "Cofradía del Caribe": "#e74c3c",
+    "Compañía del Norte": "#3498db",
+    "Casa de Contratación": "#9b59b6",
+    "Piratas Berberiscos": "#e67e22",
+    "Galeón de Manila": "#1abc9c",
+    "Virreinato del Perú": "#c0392b"
+  }
+}

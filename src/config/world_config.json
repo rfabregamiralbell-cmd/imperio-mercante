@@ -1,0 +1,68 @@
+{
+  "_comment": "Mundo de Imperio Mercante. zones = barrios (dentro de ciudad) y comarcas (fuera). Cada zona produce un material al controlarla. coords [lat,lng] reales aprox. tier = liga/dificultad. rival = quién la controla al empezar (null=libre).",
+  "worldView": { "center": [25, -30], "zoom": 3 },
+  "materials": {
+    "madera":   { "icon": "🪵", "label": "Madera", "base": 3 },
+    "hierro":   { "icon": "⛓️", "label": "Hierro", "base": 4 },
+    "tabaco":   { "icon": "🍂", "label": "Tabaco", "base": 5 },
+    "azucar":   { "icon": "🍯", "label": "Azúcar", "base": 5 },
+    "algodon":  { "icon": "🧺", "label": "Algodón", "base": 6 },
+    "especias": { "icon": "🌶️", "label": "Especias", "base": 9 },
+    "plata":    { "icon": "⚪", "label": "Plata", "base": 11 },
+    "seda":     { "icon": "🧵", "label": "Seda", "base": 12 },
+    "vino":     { "icon": "🍷", "label": "Vino", "base": 7 },
+    "pescado":  { "icon": "🐟", "label": "Pescado", "base": 3 }
+  },
+  "cities": [
+    {
+      "id": "cartagena", "name": "Cartagena de Indias", "coords": [10.42, -75.54], "tier": 1, "home": true,
+      "barrios": [
+        { "id": "ctg_centro", "name": "Centro Amurallado", "material": "tabaco", "richness": 1.2, "rival": null },
+        { "id": "ctg_getsemani", "name": "Getsemaní", "material": "azucar", "richness": 1.0, "rival": null },
+        { "id": "ctg_bocagrande", "name": "Bocagrande", "material": "pescado", "richness": 0.9, "rival": null }
+      ]
+    },
+    {
+      "id": "lahabana", "name": "La Habana", "coords": [23.11, -82.37], "tier": 1,
+      "barrios": [
+        { "id": "hab_vieja", "name": "Habana Vieja", "material": "tabaco", "richness": 1.3, "rival": "Cofradía del Caribe" },
+        { "id": "hab_regla", "name": "Regla", "material": "azucar", "richness": 1.1, "rival": null }
+      ]
+    },
+    {
+      "id": "newyork", "name": "Nueva York", "coords": [40.71, -74.01], "tier": 2,
+      "barrios": [
+        { "id": "ny_manhattan", "name": "Manhattan", "material": "hierro", "richness": 1.4, "rival": "Compañía del Norte" },
+        { "id": "ny_brooklyn", "name": "Brooklyn", "material": "algodon", "richness": 1.2, "rival": "Compañía del Norte" }
+      ]
+    },
+    {
+      "id": "caboverde", "name": "Cabo Verde", "coords": [16.0, -24.0], "tier": 2,
+      "barrios": [
+        { "id": "cv_praia", "name": "Praia", "material": "pescado", "richness": 1.1, "rival": null },
+        { "id": "cv_sal", "name": "Ilha do Sal", "material": "especias", "richness": 1.3, "rival": "Piratas Berberiscos" }
+      ]
+    },
+    {
+      "id": "sevilla", "name": "Sevilla", "coords": [37.39, -5.99], "tier": 3,
+      "barrios": [
+        { "id": "sev_arenal", "name": "El Arenal", "material": "vino", "richness": 1.3, "rival": "Casa de Contratación" },
+        { "id": "sev_triana", "name": "Triana", "material": "seda", "richness": 1.4, "rival": "Casa de Contratación" }
+      ]
+    },
+    {
+      "id": "manila", "name": "Manila", "coords": [14.6, 120.98], "tier": 4,
+      "barrios": [
+        { "id": "man_intramuros", "name": "Intramuros", "material": "seda", "richness": 1.6, "rival": "Galeón de Manila" },
+        { "id": "man_binondo", "name": "Binondo", "material": "especias", "richness": 1.7, "rival": "Galeón de Manila" }
+      ]
+    }
+  ],
+  "comarcas": [
+    { "id": "magdalena", "name": "Valle del Magdalena", "coords": [9.3, -74.8], "tier": 1, "material": "madera", "richness": 1.1, "rival": null },
+    { "id": "potosi", "name": "Sierra de Potosí", "coords": [-19.58, -65.75], "tier": 3, "material": "plata", "richness": 1.8, "rival": "Virreinato del Perú" },
+    { "id": "virginia", "name": "Colonias de Virginia", "coords": [37.5, -77.4], "tier": 2, "material": "algodon", "richness": 1.3, "rival": "Compañía del Norte" },
+    { "id": "antillas", "name": "Antillas Menores", "coords": [15.4, -61.4], "tier": 2, "material": "azucar", "richness": 1.2, "rival": "Cofradía del Caribe" },
+    { "id": "guinea", "name": "Golfo de Guinea", "coords": [3.5, 6.0], "tier": 3, "material": "especias", "richness": 1.4, "rival": "Piratas Berberiscos" }
+  ]
+}
