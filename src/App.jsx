@@ -12,7 +12,7 @@ import RoutesPanel from './components/panels/RoutesPanel.jsx';
 import FleetPanel from './components/panels/FleetPanel.jsx';
 import BankPanel from './components/panels/BankPanel.jsx';
 import PortPanel from './components/panels/PortPanel.jsx';
-import NodePanel from './components/panels/NodePanel.jsx';
+import SegmentPanel from './components/panels/SegmentPanel.jsx';
 import { DuelPanel, BattleReport } from './components/panels/WorldPanels.jsx';
 
 export default function App() {
@@ -30,7 +30,7 @@ export default function App() {
       {sheet === 'fleet' && <FleetPanel />}
       {sheet === 'bank' && <BankPanel />}
       {sheet === 'port' && <PortPanel />}
-      {sheet === 'node' && <NodePanel />}
+      {sheet === 'segment' && <SegmentPanel />}
       {sheet === 'duel' && <DuelPanel />}
 
       <BattleReport />

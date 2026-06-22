@@ -16,7 +16,7 @@ export default function PortPanel() {
   const r = state.resources;
   const mine = p.owner === 'player';
   const rivalColor = p.owner && p.owner !== 'player' ? (mapConfig.rivalColors[p.owner] || '#e05c5c') : null;
-  const nodes = state.nodes.filter((n) => n.portId === p.id);
+  const segs = state.segments.filter((n) => n.portId === p.id && n.material);
 
   const rows = MATERIAL_KEYS
     .map((m) => ({ m, price: priceAt(p, m), buy: playerBuyPrice(p, m, p.influence || 0), sell: playerSellPrice(p, m, p.influence || 0), base: basePrice(m), have: Math.floor(r[m]?.amount || 0), stock: Math.floor(p.market?.[m] ?? 0) }))
@@ -28,8 +28,8 @@ export default function PortPanel() {
       subtitle={`${p.country} · ${mine ? 'tu puerto' : p.owner ? p.owner : 'libre'} · influencia ${Math.round((p.influence || 0) * 100)}%`}
       onClose={() => dispatch({ type: 'SELECT_PORT', id: null })}
     >
-      {nodes.length > 0 && (
-        <p className="muted small">🚉 {nodes.length} vía(s) interior(es) llegan a este puerto: {nodes.map((n) => `${state.resources[n.material]?.icon}${n.name}`).join(' · ')}. Tócalas en el mapa para ver qué transportan y trabajarlas.</p>
+      {segs.length > 0 && (
+        <p className="muted small">🚉 {segs.length} vía(s) traen recursos a este puerto: {segs.map((n) => state.resources[n.material]?.icon).join(' ')}. Tócalas en el mapa para trabajarlas.</p>
       )}
 
       <div className="row">

@@ -1,43 +1,75 @@
 // ============================================================
-// INITIAL STATE — Imperio Mercante (logística en dos capas)
-// TIERRA: nodos interiores → puerto por una VÍA que controlas con
-//   influencia + mantenimiento. MAR: rutas entre puertos (defender/atacar).
+// INITIAL STATE — Imperio Mercante (red ferroviaria mundial)
+// El mundo es una red: ciudades-nodo unidas por tramos de vía (edges).
+// Los puertos son ciudades costeras donde se comercia (mercado) y nacen
+// las rutas marítimas. Controlas tramos de vía (se iluminan con tu color).
 // ============================================================
 
 import world from '../config/world_config.json';
 import { seedMarket } from '../engines/marketEngine.js';
 
-// Flatten ports and interior nodes into game entities.
-function buildWorld() {
-  const ports = [];
-  const nodes = [];   // interior production nodes, each linked to one port by a vía
-  world.ports.forEach((p) => {
-    ports.push({
-      id: p.id, name: p.name, country: p.country, coords: p.coords, tier: p.tier,
-      home: !!p.home,
-      owner: p.home ? 'player' : (p.rival || null),
-      influence: p.home ? 0.4 : 0,
-      market: seedMarket({ material: null, tier: p.tier }),
-    });
-    (p.interior || []).forEach((n) => {
-      nodes.push({
-        id: n.id, name: n.name, coords: n.coords, material: n.material,
-        portId: p.id, via: n.via, arteryWeight: n.arteryWeight || 2.5,
-        // The player "owns/works" the vía: 0..1. Owning it routes the node's
-        // production into your port. Requires upkeep each cycle.
-        control: p.home ? 0.5 : 0,
-        owner: null,             // who controls the vía (player/rival/null)
-        upkeep: 2 + (p.tier || 1),
-      });
-    });
+const HOME_PORT = 'cartagena';
+
+function build() {
+  const cityById = {};
+  world.cities.forEach((c) => { cityById[c.id] = c; });
+
+  // Ports (tradeable) — markets live here
+  const ports = world.cities.filter((c) => c.port).map((c) => {
+    const home = c.id === HOME_PORT;
+    // Assign an initial rival owner to some notable ports for tension
+    const rival = RIVALS[c.id] || null;
+    return {
+      id: c.id, name: c.name, coords: c.coords,
+      home, owner: home ? 'player' : rival,
+      influence: home ? 0.4 : 0,
+      market: seedMarket({ material: null, tier: 2 }),
+    };
   });
-  return { ports, nodes };
+
+  // Rail segments (edges). Each can be controlled by the player (0..1).
+  const segments = world.edges.map((e, i) => {
+    const ca = cityById[e.a], cb = cityById[e.b];
+    // artery weight by whether it links to a port + material value
+    const mat = ca.material || cb.material;
+    const base = mat ? (world.materials[mat]?.base || 4) : 4;
+    return {
+      id: `seg_${i}`, a: e.a, b: e.b, via: e.via,
+      material: mat || null,
+      arteryWeight: 2 + Math.min(1.6, base / 10),
+      control: 0, owner: null,
+      portId: ca.port ? ca.id : (cb.port ? cb.id : nearestPortId(ca.coords, ports)),
+      upkeep: 2 + Math.round(base / 5),
+    };
+  });
+
+  return { ports, segments, cities: world.cities };
+}
+
+const RIVALS = {
+  lahabana: 'Cofradía del Caribe',
+  newyork: 'Compañía del Norte',
+  liverpool: 'Compañía del Norte',
+  sevilla: 'Casa de Contratación',
+  canton: 'Compañía de las Indias',
+  calcuta: 'Compañía de las Indias',
+  manila: 'Galeón de Manila',
+  callao: 'Virreinato del Perú',
+};
+
+function nearestPortId(coords, ports) {
+  let best = null, bd = Infinity;
+  ports.forEach((p) => {
+    const d = (p.coords[0] - coords[0]) ** 2 + (p.coords[1] - coords[1]) ** 2;
+    if (d < bd) { bd = d; best = p.id; }
+  });
+  return best;
 }
 
 export function createInitialState() {
-  const { ports, nodes } = buildWorld();
+  const { ports, segments, cities } = build();
   return {
-    version: '3.0.0',
+    version: '6.0.0',
     tick: 0,
     governor: { name: 'Gobernador', league: 1 },
 
@@ -57,23 +89,23 @@ export function createInitialState() {
       te:      { amount: 0,    icon: '🍵', label: 'Té' },
       vino:    { amount: 0,    icon: '🍷', label: 'Vino' },
       lana:    { amount: 0,    icon: '🐑', label: 'Lana' },
+      cacao:   { amount: 0,    icon: '🍫', label: 'Cacao' },
+      trigo:   { amount: 0,    icon: '🌾', label: 'Trigo' },
     },
 
     ports,
-    nodes,
+    segments,
+    cities,
 
     ships: [],
     shipCounter: 0,
-
-    seaRoutes: [],     // maritime routes between ports
+    seaRoutes: [],
     routeCounter: 0,
-
     loans: [],
     loanCounter: 0,
-
     conflicts: [],
 
-    map: { view: 'world', selectedPortId: null, selectedNodeId: null },
+    map: { view: 'world', selectedPortId: null, selectedSegmentId: null },
     ui: { openSheet: null, conflictId: null },
     notifications: [],
   };

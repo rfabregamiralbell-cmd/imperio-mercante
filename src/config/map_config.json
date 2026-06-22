@@ -14,5 +14,9 @@
     "Piratas Berberiscos": "#e67e22",
     "Galeón de Manila": "#1abc9c",
     "Virreinato del Perú": "#c0392b"
+  },
+  "railwayLayer": {
+    "url": "https://{s}.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png",
+    "attribution": "OpenRailwayMap"
   }
 }

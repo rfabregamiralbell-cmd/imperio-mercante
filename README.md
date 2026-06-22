@@ -25,5 +25,9 @@ npm run build
 ```
 Navegación: **Mundo · Rutas · Flota · Banca**. Toca un puerto ⚓ para su mercado; un nodo 🚉 para trabajar su vía.
 
+
+## Vías reales
+La capa **OpenRailwayMap** se superpone al mapa base y dibuja las vías ferroviarias **reales** del mundo (se ven al ejecutar con internet). Encima, el juego coloca los **puertos** (puntos) y los **tramos jugables** que tu compañía controla, iluminados con tu color. Así las vías son reales y tú gestionas tu red encima.
+
 ## Stack
 React + Vite + Leaflet + react-leaflet. Reducer puro, autoguardado en localStorage. Vías como poli-líneas curvas (origen/destino reales; el trazado ferroviario exacto GIS queda como fase futura). Duelo naval 2D táctico (estilo Batalla del Nilo) pendiente; el motor ya distingue costa/mar abierto. Rivales IA por ligas, preparado para multijugador real.

@@ -5,7 +5,7 @@ export default function WorldPanel() {
   const { state, dispatch } = useGame();
   const myPorts = state.ports.filter((p) => p.owner === 'player').length;
   const rivalPorts = state.ports.filter((p) => p.owner && p.owner !== 'player').length;
-  const myVias = state.nodes.filter((n) => n.owner === 'player' && (n.control || 0) >= 0.5).length;
+  const myVias = state.segments.filter((n) => n.owner === 'player' && (n.control || 0) >= 0.5).length;
 
   return (
     <BottomSheet title="🌍 Mundo" subtitle="Logística en dos capas" onClose={() => dispatch({ type: 'CLOSE_SHEET' })}>

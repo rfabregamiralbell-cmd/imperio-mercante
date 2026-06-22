@@ -22,9 +22,9 @@ const has = (res, cost) => Object.entries(cost || {}).every(([r, v]) => (res[r]?
 function spend(s, cost) { const r = { ...s.resources }; Object.entries(cost).forEach(([k, v]) => { r[k] = { ...r[k], amount: r[k].amount - v }; }); s.resources = r; }
 function gain(s, key, amount) { const r = { ...s.resources }; r[key] = { ...r[key], amount: (r[key]?.amount ?? 0) + amount }; s.resources = r; }
 const portById = (s, id) => s.ports.find((p) => p.id === id);
-const nodeById = (s, id) => s.nodes.find((n) => n.id === id);
+const segmentById = (s, id) => s.segments.find((n) => n.id === id);
 function updatePort(s, id, patch) { s.ports = s.ports.map((p) => p.id === id ? { ...p, ...patch } : p); }
-function updateNode(s, id, patch) { s.nodes = s.nodes.map((n) => n.id === id ? { ...n, ...patch } : n); }
+function updateSegment(s, id, patch) { s.segments = s.segments.map((n) => n.id === id ? { ...n, ...patch } : n); }
 const bump = (v, a) => Math.min(1, (v || 0) + a);
 
 export function gameReducer(state, action) {
@@ -41,27 +41,24 @@ export function gameReducer(state, action) {
         // 1) Market drift at every port
         s.ports = s.ports.map((p) => ({ ...p, market: driftZoneMarket({ ...p, material: null }) }));
 
-        // 2) Interior nodes feed their port if the vía is player-controlled and upkeep paid.
+        // 2) Controlled rail segments feed their port if upkeep is paid.
         let upkeepTotal = 0;
-        s.nodes.forEach((n) => {
+        s.segments.forEach((n) => {
           if (n.owner !== 'player' || (n.control || 0) < 0.5) return;
           upkeepTotal += n.upkeep;
         });
         if (upkeepTotal > 0 && s.resources.oro.amount >= upkeepTotal) {
           spend(s, { oro: upkeepTotal });
-          s.nodes.forEach((n) => {
-            if (n.owner !== 'player' || (n.control || 0) < 0.5) return;
+          s.segments.forEach((n) => {
+            if (n.owner !== 'player' || (n.control || 0) < 0.5 || !n.material) return;
             const port = portById(s, n.portId);
             if (!port || port.owner !== 'player') return;
-            // Production flows into the port's market as supply (cheaper there)
             const produced = Math.round(3 * (n.control));
             updatePort(s, port.id, { market: applyTradeToStock(port.market, n.material, produced) });
-            // And a share lands in your warehouse to trade/sell
             gain(s, n.material, Math.max(1, Math.round(produced * 0.6)));
           });
         } else if (upkeepTotal > 0) {
-          // Can't pay upkeep → lose a bit of control on owned vías
-          s.nodes = s.nodes.map((n) => n.owner === 'player' ? { ...n, control: Math.max(0, (n.control || 0) - 0.1) } : n);
+          s.segments = s.segments.map((n) => n.owner === 'player' ? { ...n, control: Math.max(0, (n.control || 0) - 0.1) } : n);
           notify(s, 'warning', 'Sin oro para mantener tus vías: pierdes control de la red.');
         }
 
@@ -78,17 +75,17 @@ export function gameReducer(state, action) {
       return s;
     }
 
-    // ── TIERRA: trabajar/mantener una vía interior (sube control) ──
+    // ── TIERRA: trabajar/mantener un tramo de vía (sube control) ──
     case 'WORK_VIA': {
-      const node = nodeById(s, action.nodeId); if (!node) return s;
-      const port = portById(s, node.portId);
+      const seg = segmentById(s, action.segmentId); if (!seg) return s;
+      const port = portById(s, seg.portId);
       if (!port || port.owner !== 'player') { notify(s, 'warning', 'Primero debes controlar el puerto de esta vía.'); return s; }
-      const cost = { oro: 40 + node.upkeep * 6 };
+      const cost = { oro: 40 + seg.upkeep * 6 };
       if (!has(s.resources, cost)) { notify(s, 'warning', 'Sin oro para invertir en la vía.'); return s; }
       spend(s, cost);
-      const newControl = bump(node.control, 0.25);
-      updateNode(s, node.id, { control: newControl, owner: newControl >= 0.5 ? 'player' : node.owner });
-      notify(s, 'success', `Vía de ${node.name} reforzada (${Math.round(newControl * 100)}% control).`);
+      const newControl = bump(seg.control, 0.25);
+      updateSegment(s, seg.id, { control: newControl, owner: newControl >= 0.5 ? 'player' : seg.owner });
+      notify(s, 'success', `Tramo reforzado (${Math.round(newControl * 100)}% control).`);
       return s;
     }
 
@@ -231,8 +228,8 @@ export function gameReducer(state, action) {
     // ── UI ──
     case 'OPEN_SHEET':   s.ui = { ...s.ui, openSheet: action.sheet }; return s;
     case 'CLOSE_SHEET':  s.ui = { ...s.ui, openSheet: null, conflictId: null }; return s;
-    case 'SELECT_PORT':  s.ui = { ...s.ui, openSheet: action.id ? 'port' : s.ui.openSheet }; s.map = { ...s.map, selectedPortId: action.id, selectedNodeId: null }; return s;
-    case 'SELECT_NODE':  s.ui = { ...s.ui, openSheet: action.id ? 'node' : s.ui.openSheet }; s.map = { ...s.map, selectedNodeId: action.id, selectedPortId: null }; return s;
+    case 'SELECT_PORT':    s.ui = { ...s.ui, openSheet: action.id ? 'port' : s.ui.openSheet }; s.map = { ...s.map, selectedPortId: action.id, selectedSegmentId: null }; return s;
+    case 'SELECT_SEGMENT': s.ui = { ...s.ui, openSheet: action.id ? 'segment' : s.ui.openSheet }; s.map = { ...s.map, selectedSegmentId: action.id, selectedPortId: null }; return s;
     case 'SET_MAP_VIEW': s.map = { ...s.map, view: action.view }; return s;
     case 'DISMISS_NOTIFICATION': s.notifications = s.notifications.filter((n) => n.id !== action.id); return s;
 
