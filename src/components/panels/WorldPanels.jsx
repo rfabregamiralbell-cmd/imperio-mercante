@@ -1,60 +1,11 @@
 // ============================================================
-// WORLD PANELS — zone detail, duel fleet picker, battle report
+// WORLD PANELS — duel fleet picker + battle report
 // ============================================================
 
 import { useState } from 'react';
 import { useGame } from '../../state/GameContext.jsx';
 import BottomSheet from '../ui/BottomSheet.jsx';
-import mapConfig from '../../config/map_config.json';
-import { expansionCost, zoneYield } from '../../engines/influenceEngine.js';
-import { fleetPower, garrisonPower } from '../../engines/fleetEngine.js';
-
-// — Zone detail: shown when a pin is tapped —
-export function ZonePanel() {
-  const { state, dispatch } = useGame();
-  const z = state.zones.find((x) => x.id === state.map.selectedZoneId);
-  if (!z) return null;
-  const r = state.resources;
-  const cost = expansionCost(z);
-  const mine = z.owner === 'player';
-  const rivalColor = z.owner && z.owner !== 'player' ? (mapConfig.rivalColors[z.owner] || '#e05c5c') : null;
-
-  return (
-    <BottomSheet title={`${z.kind === 'barrio' ? '🏘️' : '⛰️'} ${z.name}`} subtitle={z.cityName || 'Comarca independiente'} onClose={() => dispatch({ type: 'SELECT_ZONE', id: null })}>
-      <div className="row"><span className="muted">Material</span><span>{r[z.material]?.icon} {r[z.material]?.label} ({zoneYield(z)}/ciclo)</span></div>
-      <div className="row"><span className="muted">Liga / dificultad</span><span>Tier {z.tier}</span></div>
-      <div className="row"><span className="muted">Control</span>
-        <span style={{ color: mine ? 'var(--player)' : rivalColor || 'var(--good)' }}>
-          {mine ? 'Tuyo' : z.owner ? z.owner : 'Libre'}
-        </span>
-      </div>
-
-      {mine && <p className="good small" style={{ marginTop: 10 }}>Esta zona ya extrae materiales para tu imperio.</p>}
-
-      {!mine && !z.owner && (
-        <button className="btn primary block" style={{ marginTop: 12 }}
-          disabled={r.influencia.amount < cost.influencia || r.oro.amount < cost.oro}
-          onClick={() => { dispatch({ type: 'EXPAND_ZONE', zoneId: z.id }); dispatch({ type: 'SELECT_ZONE', id: null }); }}>
-          Reclamar · <span className={r.influencia.amount >= cost.influencia ? '' : 'cant'}>🚩{cost.influencia}</span>
-          <span className={r.oro.amount >= cost.oro ? '' : 'cant'}>🪙{cost.oro}</span>
-        </button>
-      )}
-
-      {!mine && z.owner && (
-        <>
-          <p className="small" style={{ marginTop: 10 }}>
-            En manos de <b style={{ color: rivalColor }}>{z.owner}</b>. Para tomarla debes vencer su guarnición en un duelo de flotas
-            {z.kind === 'barrio' ? ' costero (la forma del litoral te favorece si eres ágil).' : ' en mar abierto (gana la flota más poderosa).'}
-          </p>
-          <button className="btn danger block" style={{ marginTop: 12 }}
-            onClick={() => { dispatch({ type: 'SELECT_ZONE', id: null }); dispatch({ type: 'CONTEST_ZONE', zoneId: z.id }); }}>
-            ⚔️ Disputar la zona
-          </button>
-        </>
-      )}
-    </BottomSheet>
-  );
-}
+import { fleetPower } from '../../engines/fleetEngine.js';
 
 // — Duel: pick the fleet to send —
 export function DuelPanel() {

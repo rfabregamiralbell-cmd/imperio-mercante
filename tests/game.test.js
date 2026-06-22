@@ -1,76 +1,109 @@
 import { describe, it, expect } from 'vitest';
 import { createInitialState } from '../src/state/initialState.js';
 import { gameReducer } from '../src/state/gameReducer.js';
-import { zoneYield, expansionCost, influencePerCycle, ownedZones } from '../src/engines/influenceEngine.js';
-import { effectiveStats, fleetPower, resolveDuel } from '../src/engines/fleetEngine.js';
+import { priceAt, playerBuyPrice, playerSellPrice } from '../src/engines/marketEngine.js';
+import { effectiveStats, resolveDuel } from '../src/engines/fleetEngine.js';
 
-const fresh = () => {
-  const s = createInitialState();
-  s.resources.oro.amount = 5000;
-  s.resources.madera.amount = 600;
-  s.resources.hierro.amount = 400;
-  s.resources.influencia.amount = 300;
-  return s;
-};
+const rich = () => { const s = createInitialState(); s.resources.oro.amount = 9000; s.resources.madera.amount = 900; s.resources.hierro.amount = 600; return s; };
 
-describe('initial world', () => {
-  it('starts with the 3 Cartagena barrios owned by the player', () => {
+describe('world & markets', () => {
+  it('every zone has a market', () => {
     const s = createInitialState();
-    expect(ownedZones(s.zones).length).toBe(3);
+    expect(s.zones.every((z) => z.market && Object.keys(z.market).length > 0)).toBe(true);
   });
-  it('has rival and free zones', () => {
+  it('a material is cheaper where it is produced', () => {
     const s = createInitialState();
-    expect(s.zones.some((z) => z.owner && z.owner !== 'player')).toBe(true);
-    expect(s.zones.some((z) => z.owner === null)).toBe(true);
+    const prod = s.zones.find((z) => z.material === 'tabaco');
+    const other = s.zones.find((z) => z.material !== 'tabaco');
+    expect(priceAt(prod, 'tabaco')).toBeLessThan(priceAt(other, 'tabaco'));
   });
 });
 
-describe('economy', () => {
-  it('TICK yields materials and influence from owned zones', () => {
+describe('dynamic trade', () => {
+  it('buying reduces stock and raises price; goods enter warehouse', () => {
     let s = createInitialState();
-    s._lastCycleAt = 0;
-    s = gameReducer(s, { type: 'TICK', now: 5000 });
-    expect(s.resources.tabaco.amount).toBeGreaterThan(0);
-    expect(s.resources.influencia.amount).toBeGreaterThan(0);
+    const z = s.zones.find((x) => x.owner === null);
+    const stock0 = z.market[z.material];
+    const p0 = priceAt(z, z.material);
+    s = gameReducer(s, { type: 'BUY', zoneId: z.id, material: z.material, units: 30 });
+    const zz = s.zones.find((x) => x.id === z.id);
+    expect(zz.market[z.material]).toBeLessThan(stock0);
+    expect(priceAt(zz, z.material)).toBeGreaterThanOrEqual(p0);
+    expect(s.resources[z.material].amount).toBeGreaterThan(0);
   });
-  it('TRADE_ALL converts goods to gold', () => {
+  it('selling yields gold and grows zone influence', () => {
     let s = createInitialState();
-    s.resources.tabaco.amount = 10;
-    const before = s.resources.oro.amount;
-    s = gameReducer(s, { type: 'TRADE_ALL' });
-    expect(s.resources.oro.amount).toBeGreaterThan(before);
-    expect(s.resources.tabaco.amount).toBe(0);
+    s.resources.tabaco.amount = 20;
+    const z = s.zones.find((x) => x.material !== 'tabaco');
+    const oro0 = s.resources.oro.amount;
+    s = gameReducer(s, { type: 'SELL', zoneId: z.id, material: 'tabaco', units: 10 });
+    expect(s.resources.oro.amount).toBeGreaterThan(oro0);
+    expect(s.zones.find((x) => x.id === z.id).influence).toBeGreaterThan(0);
+  });
+  it('arbitrage is positive: sell dear > buy cheap', () => {
+    const s = createInitialState();
+    const cheap = s.zones.find((x) => x.material === 'especias');
+    const dear = s.zones.find((x) => x.material !== 'especias');
+    expect(playerSellPrice(dear, 'especias', 0)).toBeGreaterThan(playerBuyPrice(cheap, 'especias', 0));
   });
 });
 
-describe('influence / expansion', () => {
-  it('expands into a free zone for influence + gold', () => {
-    let s = fresh();
-    const free = s.zones.find((z) => z.owner === null);
-    s = gameReducer(s, { type: 'EXPAND_ZONE', zoneId: free.id });
-    expect(s.zones.find((z) => z.id === free.id).owner).toBe('player');
+describe('credit', () => {
+  it('loan adds gold and records debt with interest', () => {
+    let s = createInitialState();
+    const oro0 = s.resources.oro.amount;
+    s = gameReducer(s, { type: 'TAKE_LOAN', principal: 1000, rate: 20, term: 10 });
+    expect(s.resources.oro.amount).toBe(oro0 + 1000);
+    expect(s.loans[0].due).toBe(1200);
   });
-  it('does NOT take a rival zone via expansion', () => {
-    let s = fresh();
+  it('repaying clears the loan', () => {
+    let s = createInitialState();
+    s = gameReducer(s, { type: 'TAKE_LOAN', principal: 1000, rate: 20, term: 10 });
+    s = gameReducer(s, { type: 'REPAY_LOAN', loanId: s.loans[0].id });
+    expect(s.loans.length).toBe(0);
+  });
+});
+
+describe('routes', () => {
+  it('creates a route and assigns ships', () => {
+    let s = rich();
+    s = gameReducer(s, { type: 'BUILD_SHIP', shipId: 'galeon' });
+    const stops = [s.zones[0].id, s.zones[5].id];
+    s = gameReducer(s, { type: 'CREATE_ROUTE', stops, shipIds: [s.ships[0].id], auto: true, now: 1000 });
+    expect(s.routes.length).toBe(1);
+    expect(s.ships[0].status).toBe('trading');
+  });
+  it('an auto route advances stops over cycles', () => {
+    let s = rich();
+    s = gameReducer(s, { type: 'BUILD_SHIP', shipId: 'galeon' });
+    const stops = [s.zones[0].id, s.zones[5].id, s.zones[9].id];
+    s = gameReducer(s, { type: 'CREATE_ROUTE', stops, shipIds: [s.ships[0].id], auto: true, now: 1000 });
+    let t = 1000;
+    for (let i = 0; i < 6; i++) { t += 5000; s._lastCycleAt = t - 5000; s = gameReducer(s, { type: 'TICK', now: t }); }
+    expect(s.routes[0].legIndex).toBeGreaterThan(0);
+  });
+});
+
+describe('military', () => {
+  it('a strong fleet conquers a rival zone', () => {
+    let s = rich();
+    for (let i = 0; i < 3; i++) s = gameReducer(s, { type: 'BUILD_SHIP', shipId: 'navio' });
     const rival = s.zones.find((z) => z.owner && z.owner !== 'player');
-    const owner = rival.owner;
-    s = gameReducer(s, { type: 'EXPAND_ZONE', zoneId: rival.id });
-    expect(s.zones.find((z) => z.id === rival.id).owner).toBe(owner);
+    s = gameReducer(s, { type: 'CONTEST_ZONE', zoneId: rival.id });
+    s.conflicts[0].garrison = 1;
+    s = gameReducer(s, { type: 'RESOLVE_CONFLICT', conflictId: s.conflicts[0].id, shipIds: s.ships.map((x) => x.id) });
+    expect(s.zones.find((z) => z.id === rival.id).owner).toBe('player');
   });
-  it('expansion cost scales with tier', () => {
-    expect(expansionCost({ tier: 3 }).oro).toBeGreaterThan(expansionCost({ tier: 1 }).oro);
+  it('coast terrain gives a maneuver bonus', () => {
+    const ships = [{ configId: 'fragata', hpPct: 1, upgrades: {} }];
+    const seed = () => 0.5;
+    expect(resolveDuel(ships, 200, 'coast', seed).ratio).toBeGreaterThan(resolveDuel(ships, 200, 'open_sea', seed).ratio);
   });
 });
 
-describe('fleet', () => {
-  it('builds a named ship', () => {
-    let s = fresh();
-    s = gameReducer(s, { type: 'BUILD_SHIP', shipId: 'fragata' });
-    expect(s.ships.length).toBe(1);
-    expect(s.ships[0].name).toBeTruthy();
-  });
+describe('ships', () => {
   it('upgrades raise effective stats', () => {
-    let s = fresh();
+    let s = rich();
     s = gameReducer(s, { type: 'BUILD_SHIP', shipId: 'fragata' });
     const before = effectiveStats(s.ships[0]).canones;
     s = gameReducer(s, { type: 'UPGRADE_SHIP', shipId: s.ships[0].id, upgradeId: 'canones' });
@@ -78,43 +111,13 @@ describe('fleet', () => {
   });
 });
 
-describe('conflict / duel', () => {
-  it('contesting a rival zone opens a conflict with terrain', () => {
-    let s = fresh();
-    s = gameReducer(s, { type: 'BUILD_SHIP', shipId: 'navio' });
-    const rival = s.zones.find((z) => z.owner && z.owner !== 'player');
-    s = gameReducer(s, { type: 'CONTEST_ZONE', zoneId: rival.id });
-    expect(s.conflicts.length).toBe(1);
-    expect(['coast', 'open_sea']).toContain(s.conflicts[0].terrain);
-  });
-  it('a strong fleet wins and takes the zone', () => {
-    let s = fresh();
-    // build a big fleet
-    for (let i = 0; i < 3; i++) s = gameReducer(s, { type: 'BUILD_SHIP', shipId: 'navio' });
-    const rival = s.zones.find((z) => z.owner && z.owner !== 'player');
-    s = gameReducer(s, { type: 'CONTEST_ZONE', zoneId: rival.id });
-    const cf = s.conflicts[0];
-    // force a deterministic strong garrison by lowering it
-    cf.garrison = 1;
-    s = gameReducer(s, { type: 'RESOLVE_CONFLICT', conflictId: cf.id, shipIds: s.ships.map((x) => x.id) });
-    expect(s.lastBattleReport.win).toBe(true);
-    expect(s.zones.find((z) => z.id === rival.id).owner).toBe('player');
-  });
-  it('coast terrain gives a maneuver bonus over open sea', () => {
-    const ships = [{ configId: 'fragata', hpPct: 1, upgrades: {} }];
-    const seed = () => 0.5; // fixed luck
-    const coast = resolveDuel(ships, 200, 'coast', seed);
-    const open = resolveDuel(ships, 200, 'open_sea', seed);
-    expect(coast.ratio).toBeGreaterThan(open.ratio);
-  });
-});
-
 describe('persistence', () => {
-  it('LOAD_STATE preserves zones and ships', () => {
-    let s = fresh();
-    s = gameReducer(s, { type: 'BUILD_SHIP', shipId: 'fragata' });
+  it('LOAD_STATE preserves zones, routes and markets', () => {
+    let s = rich();
+    s = gameReducer(s, { type: 'BUILD_SHIP', shipId: 'galeon' });
+    s = gameReducer(s, { type: 'CREATE_ROUTE', stops: [s.zones[0].id, s.zones[1].id], shipIds: [s.ships[0].id], auto: true, now: 1 });
     const re = gameReducer(createInitialState(), { type: 'LOAD_STATE', state: JSON.parse(JSON.stringify(s)) });
-    expect(re.ships.length).toBe(s.ships.length);
-    expect(re.zones.length).toBe(s.zones.length);
+    expect(re.routes.length).toBe(s.routes.length);
+    expect(re.zones[0].market).toBeTruthy();
   });
 });

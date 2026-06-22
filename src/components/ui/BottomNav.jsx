@@ -1,10 +1,10 @@
 import { useGame } from '../../state/GameContext.jsx';
 
 const NAV = [
-  { sheet: 'empire',  icon: '🏛️', label: 'Imperio' },
-  { sheet: 'trade',   icon: '⚖️', label: 'Comercio' },
-  { sheet: 'fleet',   icon: '🚢', label: 'Flota' },
-  { sheet: 'world',   icon: '🌍', label: 'Mundo' },
+  { sheet: 'world',  icon: '🌍', label: 'Mundo' },
+  { sheet: 'routes', icon: '🧭', label: 'Rutas' },
+  { sheet: 'fleet',  icon: '🚢', label: 'Flota' },
+  { sheet: 'bank',   icon: '🏦', label: 'Banca' },
 ];
 
 export default function BottomNav() {

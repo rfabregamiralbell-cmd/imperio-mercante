@@ -6,13 +6,15 @@
 // ============================================================
 
 import world from '../config/world_config.json';
+import { seedMarket } from '../engines/marketEngine.js';
 
 // Flatten world config into a single zones array with owner + city link.
 function buildZones() {
   const zones = [];
+  const addMarket = (z) => { z.market = seedMarket(z); z.influence = z.owner === 'player' ? 0.3 : 0; return z; };
   world.cities.forEach((city) => {
     (city.barrios || []).forEach((b) => {
-      zones.push({
+      zones.push(addMarket({
         id: b.id,
         name: b.name,
         kind: 'barrio',
@@ -24,11 +26,11 @@ function buildZones() {
         richness: b.richness,
         owner: b.rival ? b.rival : (city.home ? 'player' : null),
         home: !!city.home,
-      });
+      }));
     });
   });
   world.comarcas.forEach((c) => {
-    zones.push({
+    zones.push(addMarket({
       id: c.id,
       name: c.name,
       kind: 'comarca',
@@ -40,7 +42,7 @@ function buildZones() {
       richness: c.richness,
       owner: c.rival ? c.rival : null,
       home: false,
-    });
+    }));
   });
   return zones;
 }
@@ -52,12 +54,12 @@ export function createInitialState() {
 
     governor: { name: 'Gobernador', league: 1, renown: 0 },
 
-    // Resources: oro (capital), influencia (puntos para expandir), + materials.
+    // Capital. Materials live in the player's "warehouse" (cargo on hand),
+    // bought and sold across zones. Influence is now per-zone (commercial weight).
     resources: {
-      oro:        { amount: 500,  icon: '🪙', label: 'Oro' },
-      influencia: { amount: 0,    icon: '🚩', label: 'Influencia' },
-      madera:     { amount: 60,   icon: '🪵', label: 'Madera' },
-      hierro:     { amount: 20,   icon: '⛓️', label: 'Hierro' },
+      oro:        { amount: 1000, icon: '🪙', label: 'Oro' },
+      madera:     { amount: 40,   icon: '🪵', label: 'Madera' },
+      hierro:     { amount: 15,   icon: '⛓️', label: 'Hierro' },
       tabaco:     { amount: 0,    icon: '🍂', label: 'Tabaco' },
       azucar:     { amount: 0,    icon: '🍯', label: 'Azúcar' },
       algodon:    { amount: 0,    icon: '🧺', label: 'Algodón' },
@@ -73,12 +75,20 @@ export function createInitialState() {
     ships: [],
     shipCounter: 0,
 
+    // Trade routes: circuits with stops; ships assigned; auto buy-low/sell-high.
+    routes: [],
+    routeCounter: 0,
+
+    // Credit: outstanding loans (principal + interest).
+    loans: [],
+    loanCounter: 0,
+
     // Pending conflicts when contesting a rival zone (auto/2D duel).
     conflicts: [],
 
     map: { view: 'world', selectedZoneId: null },
 
-    ui: { openSheet: null, selectedShipId: null, conflictId: null },
+    ui: { openSheet: null, selectedShipId: null, conflictId: null, routeDraftId: null },
 
     notifications: [],
   };
