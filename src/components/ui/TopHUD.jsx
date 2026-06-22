@@ -1,26 +1,16 @@
-import { useState } from 'react';
 import { useGame } from '../../state/GameContext.jsx';
-
-const PRIMARY = ['oro', 'madera', 'hierro'];
+import { MATERIALS } from '../../engines/marketEngine.js';
 
 export default function TopHUD() {
   const { state } = useGame();
-  const [open, setOpen] = useState(false);
-  const r = state.resources;
-  const goods = Object.keys(r).filter((k) => !PRIMARY.includes(k) && r[k].amount > 0);
-  const shown = open ? [...PRIMARY, ...goods] : PRIMARY;
-  const debt = (state.loans || []).reduce((s, l) => s + l.due, 0);
-
+  const goods = Object.entries(state.warehouse).filter(([, v]) => v > 0);
   return (
     <div className="hud">
-      {shown.map((k) => (
-        <span key={k} className={`hud-res ${k === 'oro' ? 'gold' : ''}`}>
-          <span className="ic">{r[k].icon}</span>
-          <span className="val">{Math.floor(r[k].amount)}</span>
-        </span>
+      <span className="hud-res gold"><span className="ic">🪙</span><span className="val">{Math.floor(state.oro)}</span></span>
+      {goods.length === 0 && <span className="hud-res muted small">Sin mercancías — tus vías están produciendo…</span>}
+      {goods.map(([m, v]) => (
+        <span key={m} className="hud-res"><span className="ic">{MATERIALS[m].icon}</span><span className="val">{Math.floor(v)}</span></span>
       ))}
-      {debt > 0 && <span className="hud-res" style={{ color: 'var(--bad)' }}><span className="ic">🏦</span><span className="val">-{debt}</span></span>}
-      <button className="hud-more" onClick={() => setOpen((o) => !o)} aria-label="Más recursos">{open ? '−' : '+'}</button>
     </div>
   );
 }

@@ -1,45 +1,28 @@
-// ============================================================
-// GAME CONTEXT — provider, tick loop, autosave to localStorage
-// ============================================================
+import { createContext, useContext, useReducer, useEffect } from 'react';
+import { createInitialState, reducer } from './gameState.js';
 
-import { createContext, useContext, useReducer, useEffect, useRef } from 'react';
-import { gameReducer } from './gameReducer.js';
-import { createInitialState } from './initialState.js';
-
-const GameContext = createContext(null);
-const SAVE_KEY = 'imperio-mercante-save';
+const Ctx = createContext(null);
+const KEY = 'imperio-mercante-save';
 
 function init() {
-  try {
-    const raw = localStorage.getItem(SAVE_KEY);
-    if (raw) return gameReducer(createInitialState(), { type: 'LOAD_STATE', state: JSON.parse(raw) });
-  } catch (e) { /* ignore corrupt save */ }
+  try { const raw = localStorage.getItem(KEY); if (raw) return { ...createInitialState(), ...JSON.parse(raw) }; }
+  catch (e) { /* ignore */ }
   return createInitialState();
 }
 
 export function GameProvider({ children }) {
-  const [state, dispatch] = useReducer(gameReducer, undefined, init);
-  const saveRef = useRef(0);
-
-  // Economy tick every second
+  const [state, dispatch] = useReducer(reducer, undefined, init);
   useEffect(() => {
     const id = setInterval(() => dispatch({ type: 'TICK', now: Date.now() }), 1000);
     return () => clearInterval(id);
   }, []);
-
-  // Autosave (throttled)
   useEffect(() => {
-    const now = Date.now();
-    if (now - saveRef.current < 2000) return;
-    saveRef.current = now;
-    try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch (e) { /* quota */ }
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* quota */ }
   }, [state]);
-
-  return <GameContext.Provider value={{ state, dispatch }}>{children}</GameContext.Provider>;
+  return <Ctx.Provider value={{ state, dispatch }}>{children}</Ctx.Provider>;
 }
-
 export function useGame() {
-  const ctx = useContext(GameContext);
-  if (!ctx) throw new Error('useGame must be used within GameProvider');
-  return ctx;
+  const c = useContext(Ctx);
+  if (!c) throw new Error('useGame fuera de GameProvider');
+  return c;
 }

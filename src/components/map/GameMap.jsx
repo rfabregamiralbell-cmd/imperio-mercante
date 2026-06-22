@@ -1,14 +1,15 @@
 // ============================================================
-// GAME MAP — base + capas reales (tren/mar) + RUTAS NAVALES 2D
-// estilo UNESCO: arcos gruesos de color por océano, con flecha de
-// dirección y puntas de puerto etiquetadas. Selector de capas.
+// GAME MAP — base + capas reales (tren/mar) + rutas navales (arcos) +
+// VÍAS interiores (extracción) + puertos interactivos. Tocar abre panel.
 // ============================================================
 
 import { useState } from 'react';
 import { MapContainer, TileLayer, Polyline, CircleMarker, Tooltip, Marker } from 'react-leaflet';
 import L from 'leaflet';
+import { useGame } from '../../state/GameContext.jsx';
 import mapConfig from '../../config/map_config.json';
 import world from '../../config/world_config.json';
+import { MATERIALS } from '../../engines/marketEngine.js';
 
 const LAYERS = [
   { key: 'routes', icon: '🧭', label: 'Rutas' },
@@ -16,31 +17,26 @@ const LAYERS = [
   { key: 'sea', icon: '⚓', label: 'Mar' },
 ];
 
-// Flecha (divIcon) orientada según el rumbo final de la ruta.
 function arrowIcon(angleDeg, color) {
-  return L.divIcon({
-    className: 'route-arrow',
-    html: `<div style="transform:rotate(${angleDeg}deg);color:${color};font-size:18px;line-height:1">▶</div>`,
-    iconSize: [18, 18], iconAnchor: [9, 9],
-  });
+  return L.divIcon({ className: 'route-arrow', html: `<div style="transform:rotate(${angleDeg}deg);color:${color};font-size:16px;line-height:1">▶</div>`, iconSize: [16, 16], iconAnchor: [8, 8] });
 }
-function bearing(a, b) {
-  const dy = b[0] - a[0], dx = b[1] - a[1];
-  return Math.atan2(dy, dx) * 180 / Math.PI; // 0 = hacia el este; ▶ apunta al este
-}
+const bearing = (a, b) => Math.atan2(b[0] - a[0], b[1] - a[1]) * 180 / Math.PI;
+
+const PLAYER = '#f4c430';
+const RIVAL = '#c0506a';
 
 export default function GameMap() {
+  const { state, dispatch } = useGame();
   const [on, setOn] = useState({ routes: true, railway: false, sea: false });
   const toggle = (k) => setOn((s) => ({ ...s, [k]: !s[k] }));
-  const portById = (id) => world.ports.find((p) => p.id === id);
+  const portOwner = (id) => state.ports.find((p) => p.id === id)?.owner;
 
   return (
     <div className="map-root">
       <div className="layer-control">
         {LAYERS.map((l) => (
           <button key={l.key} className={`layer-btn ${on[l.key] ? 'on' : ''}`} onClick={() => toggle(l.key)} title={l.label}>
-            <span className="layer-ic">{l.icon}</span>
-            <span className="layer-lb">{l.label}</span>
+            <span className="layer-ic">{l.icon}</span><span className="layer-lb">{l.label}</span>
           </button>
         ))}
       </div>
@@ -53,29 +49,54 @@ export default function GameMap() {
         {on.railway && <TileLayer url={mapConfig.railway.url} opacity={0.6} />}
         {on.sea && <TileLayer url={mapConfig.sea.url} opacity={0.7} />}
 
-        {/* ── RUTAS NAVALES (arcos gruesos por océano) ── */}
+        {/* Rutas navales (arcos por océano) */}
         {on.routes && world.seaRoutes.map((r, i) => {
-          const path = r.path;
-          const last = path[path.length - 1];
-          const prev = path[path.length - 2];
-          const ang = bearing(prev, last);
+          const last = r.path[r.path.length - 1], prev = r.path[r.path.length - 2];
           return (
             <span key={`r_${i}`}>
-              {/* halo claro debajo para dar cuerpo al arco */}
-              <Polyline positions={path} pathOptions={{ color: '#ffffff', weight: 7, opacity: 0.35 }} />
-              <Polyline positions={path} pathOptions={{ color: r.color, weight: 4, opacity: 0.9 }} />
-              <Marker position={last} icon={arrowIcon(ang, r.color)} interactive={false} />
+              <Polyline positions={r.path} pathOptions={{ color: '#fff', weight: 6, opacity: 0.3 }} />
+              <Polyline positions={r.path} pathOptions={{ color: r.color, weight: 3.5, opacity: 0.85 }} />
+              <Marker position={last} icon={arrowIcon(bearing(prev, last), r.color)} interactive={false} />
             </span>
           );
         })}
 
-        {/* ── PUERTOS (puntos discretos con etiqueta) ── */}
-        {world.ports.map((p) => (
-          <CircleMarker key={p.id} center={p.coords} radius={4}
-            pathOptions={{ color: '#1c2329', weight: 1.5, fillColor: '#2b333b', fillOpacity: 1 }}>
-            <Tooltip direction="top" offset={[0, -5]} opacity={0.95}>{p.name}</Tooltip>
-          </CircleMarker>
-        ))}
+        {/* VÍAS interiores (extracción) — color por dueño, clicables */}
+        {state.vias.map((v) => {
+          const wv = world.vias.find((x) => x.id === v.id);
+          if (!wv) return null;
+          const mine = v.owner === 'player';
+          return (
+            <Polyline key={v.id} positions={wv.via}
+              pathOptions={{ color: mine ? PLAYER : '#8c98a3', weight: mine ? 3.5 : 2, opacity: mine ? 0.95 : 0.5 }}
+              eventHandlers={{ click: () => dispatch({ type: 'SELECT_VIA', id: v.id }) }} />
+          );
+        })}
+
+        {/* Nodos interiores (origen de vía) */}
+        {state.vias.map((v) => {
+          const wv = world.vias.find((x) => x.id === v.id);
+          if (!wv) return null;
+          return (
+            <CircleMarker key={`n_${v.id}`} center={wv.coords} radius={3}
+              pathOptions={{ color: '#5a4a2a', weight: 1, fillColor: v.owner === 'player' ? PLAYER : '#7a6a4a', fillOpacity: 1 }}
+              eventHandlers={{ click: () => dispatch({ type: 'SELECT_VIA', id: v.id }) }}>
+              <Tooltip direction="top" offset={[0, -4]} opacity={0.95}>{wv.name} · {MATERIALS[v.material].icon}</Tooltip>
+            </CircleMarker>
+          );
+        })}
+
+        {/* Puertos (interactivos) */}
+        {state.ports.map((p) => {
+          const fill = p.owner === 'player' ? PLAYER : p.owner ? RIVAL : '#2b333b';
+          return (
+            <CircleMarker key={p.id} center={p.coords} radius={p.home ? 6 : 4}
+              pathOptions={{ color: '#1c2329', weight: 1.5, fillColor: fill, fillOpacity: 1 }}
+              eventHandlers={{ click: () => dispatch({ type: 'SELECT_PORT', id: p.id }) }}>
+              <Tooltip direction="top" offset={[0, -5]} opacity={0.95}>{p.name}</Tooltip>
+            </CircleMarker>
+          );
+        })}
       </MapContainer>
     </div>
   );

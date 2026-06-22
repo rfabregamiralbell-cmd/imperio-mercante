@@ -1,5 +1,4 @@
 import { useGame } from '../../state/GameContext.jsx';
-
 export default function Notifications() {
   const { state } = useGame();
   return (
