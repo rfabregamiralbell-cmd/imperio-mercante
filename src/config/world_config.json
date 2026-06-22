@@ -1,68 +1,1297 @@
 {
-  "_comment": "Mundo de Imperio Mercante. zones = barrios (dentro de ciudad) y comarcas (fuera). Cada zona produce un material al controlarla. coords [lat,lng] reales aprox. tier = liga/dificultad. rival = quién la controla al empezar (null=libre).",
-  "worldView": { "center": [25, -30], "zoom": 3 },
-  "materials": {
-    "madera":   { "icon": "🪵", "label": "Madera", "base": 3 },
-    "hierro":   { "icon": "⛓️", "label": "Hierro", "base": 4 },
-    "tabaco":   { "icon": "🍂", "label": "Tabaco", "base": 5 },
-    "azucar":   { "icon": "🍯", "label": "Azúcar", "base": 5 },
-    "algodon":  { "icon": "🧺", "label": "Algodón", "base": 6 },
-    "especias": { "icon": "🌶️", "label": "Especias", "base": 9 },
-    "plata":    { "icon": "⚪", "label": "Plata", "base": 11 },
-    "seda":     { "icon": "🧵", "label": "Seda", "base": 12 },
-    "vino":     { "icon": "🍷", "label": "Vino", "base": 7 },
-    "pescado":  { "icon": "🐟", "label": "Pescado", "base": 3 }
-  },
-  "cities": [
-    {
-      "id": "cartagena", "name": "Cartagena de Indias", "coords": [10.42, -75.54], "tier": 1, "home": true,
-      "barrios": [
-        { "id": "ctg_centro", "name": "Centro Amurallado", "material": "tabaco", "richness": 1.2, "rival": null },
-        { "id": "ctg_getsemani", "name": "Getsemaní", "material": "azucar", "richness": 1.0, "rival": null },
-        { "id": "ctg_bocagrande", "name": "Bocagrande", "material": "pescado", "richness": 0.9, "rival": null }
-      ]
-    },
-    {
-      "id": "lahabana", "name": "La Habana", "coords": [23.11, -82.37], "tier": 1,
-      "barrios": [
-        { "id": "hab_vieja", "name": "Habana Vieja", "material": "tabaco", "richness": 1.3, "rival": "Cofradía del Caribe" },
-        { "id": "hab_regla", "name": "Regla", "material": "azucar", "richness": 1.1, "rival": null }
-      ]
-    },
-    {
-      "id": "newyork", "name": "Nueva York", "coords": [40.71, -74.01], "tier": 2,
-      "barrios": [
-        { "id": "ny_manhattan", "name": "Manhattan", "material": "hierro", "richness": 1.4, "rival": "Compañía del Norte" },
-        { "id": "ny_brooklyn", "name": "Brooklyn", "material": "algodon", "richness": 1.2, "rival": "Compañía del Norte" }
-      ]
-    },
-    {
-      "id": "caboverde", "name": "Cabo Verde", "coords": [16.0, -24.0], "tier": 2,
-      "barrios": [
-        { "id": "cv_praia", "name": "Praia", "material": "pescado", "richness": 1.1, "rival": null },
-        { "id": "cv_sal", "name": "Ilha do Sal", "material": "especias", "richness": 1.3, "rival": "Piratas Berberiscos" }
-      ]
-    },
-    {
-      "id": "sevilla", "name": "Sevilla", "coords": [37.39, -5.99], "tier": 3,
-      "barrios": [
-        { "id": "sev_arenal", "name": "El Arenal", "material": "vino", "richness": 1.3, "rival": "Casa de Contratación" },
-        { "id": "sev_triana", "name": "Triana", "material": "seda", "richness": 1.4, "rival": "Casa de Contratación" }
-      ]
-    },
-    {
-      "id": "manila", "name": "Manila", "coords": [14.6, 120.98], "tier": 4,
-      "barrios": [
-        { "id": "man_intramuros", "name": "Intramuros", "material": "seda", "richness": 1.6, "rival": "Galeón de Manila" },
-        { "id": "man_binondo", "name": "Binondo", "material": "especias", "richness": 1.7, "rival": "Galeón de Manila" }
-      ]
-    }
+ "_comment": "Mundo logístico: puertos reales + nodos interiores reales unidos por vías (poli-líneas curvas). Capa mar entre puertos.",
+ "worldView": {
+  "center": [
+   20,
+   -20
   ],
-  "comarcas": [
-    { "id": "magdalena", "name": "Valle del Magdalena", "coords": [9.3, -74.8], "tier": 1, "material": "madera", "richness": 1.1, "rival": null },
-    { "id": "potosi", "name": "Sierra de Potosí", "coords": [-19.58, -65.75], "tier": 3, "material": "plata", "richness": 1.8, "rival": "Virreinato del Perú" },
-    { "id": "virginia", "name": "Colonias de Virginia", "coords": [37.5, -77.4], "tier": 2, "material": "algodon", "richness": 1.3, "rival": "Compañía del Norte" },
-    { "id": "antillas", "name": "Antillas Menores", "coords": [15.4, -61.4], "tier": 2, "material": "azucar", "richness": 1.2, "rival": "Cofradía del Caribe" },
-    { "id": "guinea", "name": "Golfo de Guinea", "coords": [3.5, 6.0], "tier": 3, "material": "especias", "richness": 1.4, "rival": "Piratas Berberiscos" }
-  ]
+  "zoom": 3
+ },
+ "materials": {
+  "madera": {
+   "icon": "🪵",
+   "label": "Madera",
+   "base": 3
+  },
+  "hierro": {
+   "icon": "⛓️",
+   "label": "Hierro",
+   "base": 4
+  },
+  "carbon": {
+   "icon": "⚫",
+   "label": "Carbón",
+   "base": 4
+  },
+  "tabaco": {
+   "icon": "🍂",
+   "label": "Tabaco",
+   "base": 5
+  },
+  "azucar": {
+   "icon": "🍯",
+   "label": "Azúcar",
+   "base": 5
+  },
+  "algodon": {
+   "icon": "🧺",
+   "label": "Algodón",
+   "base": 6
+  },
+  "cafe": {
+   "icon": "☕",
+   "label": "Café",
+   "base": 6
+  },
+  "especias": {
+   "icon": "🌶️",
+   "label": "Especias",
+   "base": 9
+  },
+  "plata": {
+   "icon": "⚪",
+   "label": "Plata",
+   "base": 11
+  },
+  "oro_m": {
+   "icon": "🟡",
+   "label": "Oro en bruto",
+   "base": 13
+  },
+  "seda": {
+   "icon": "🧵",
+   "label": "Seda",
+   "base": 12
+  },
+  "te": {
+   "icon": "🍵",
+   "label": "Té",
+   "base": 8
+  },
+  "vino": {
+   "icon": "🍷",
+   "label": "Vino",
+   "base": 7
+  },
+  "lana": {
+   "icon": "🐑",
+   "label": "Lana",
+   "base": 5
+  }
+ },
+ "ports": [
+  {
+   "id": "cartagena",
+   "name": "Cartagena",
+   "country": "Colombia",
+   "coords": [
+    10.42,
+    -75.54
+   ],
+   "tier": 1,
+   "home": true,
+   "rival": null,
+   "interior": [
+    {
+     "id": "medellin",
+     "name": "Medellín",
+     "coords": [
+      6.25,
+      -75.56
+     ],
+     "material": "cafe",
+     "via": [
+      [
+       6.25,
+       -75.56
+      ],
+      [
+       6.9447,
+       -75.4967
+      ],
+      [
+       7.6395,
+       -75.4494
+      ],
+      [
+       8.3344,
+       -75.43
+      ],
+      [
+       9.0295,
+       -75.4427
+      ],
+      [
+       9.7247,
+       -75.4833
+      ],
+      [
+       10.42,
+       -75.54
+      ]
+     ]
+    },
+    {
+     "id": "zaragoza_co",
+     "name": "Zaragoza",
+     "coords": [
+      7.49,
+      -74.87
+     ],
+     "material": "oro_m",
+     "via": [
+      [
+       7.49,
+       -74.87
+      ],
+      [
+       7.9917,
+       -74.9232
+      ],
+      [
+       8.4898,
+       -74.992
+      ],
+      [
+       8.9817,
+       -75.088
+      ],
+      [
+       9.4665,
+       -75.2154
+      ],
+      [
+       9.945,
+       -75.3698
+      ],
+      [
+       10.42,
+       -75.54
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "barranquilla",
+   "name": "Barranquilla",
+   "country": "Colombia",
+   "coords": [
+    11.0,
+    -74.81
+   ],
+   "tier": 1,
+   "home": false,
+   "rival": null,
+   "interior": [
+    {
+     "id": "bogota",
+     "name": "Bogotá",
+     "coords": [
+      4.71,
+      -74.07
+     ],
+     "material": "cafe",
+     "via": [
+      [
+       4.71,
+       -74.07
+      ],
+      [
+       5.7653,
+       -74.1337
+      ],
+      [
+       6.8188,
+       -74.2135
+      ],
+      [
+       7.869,
+       -74.3208
+      ],
+      [
+       8.9155,
+       -74.4601
+      ],
+      [
+       9.9587,
+       -74.6271
+      ],
+      [
+       11.0,
+       -74.81
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "veracruz",
+   "name": "Veracruz",
+   "country": "México",
+   "coords": [
+    19.17,
+    -96.13
+   ],
+   "tier": 2,
+   "home": false,
+   "rival": null,
+   "interior": [
+    {
+     "id": "zacatecas",
+     "name": "Zacatecas",
+     "coords": [
+      22.77,
+      -102.57
+     ],
+     "material": "plata",
+     "via": [
+      [
+       22.77,
+       -102.57
+      ],
+      [
+       22.1176,
+       -101.5259
+      ],
+      [
+       21.4793,
+       -100.474
+      ],
+      [
+       20.8653,
+       -99.4086
+      ],
+      [
+       20.2793,
+       -98.3274
+      ],
+      [
+       19.7176,
+       -97.2326
+      ],
+      [
+       19.17,
+       -96.13
+      ]
+     ]
+    },
+    {
+     "id": "cdmx",
+     "name": "Ciudad de México",
+     "coords": [
+      19.43,
+      -99.13
+     ],
+     "material": "algodon",
+     "via": [
+      [
+       19.43,
+       -99.13
+      ],
+      [
+       19.3269,
+       -98.6352
+      ],
+      [
+       19.2398,
+       -98.139
+      ],
+      [
+       19.1804,
+       -97.6404
+      ],
+      [
+       19.1531,
+       -97.139
+      ],
+      [
+       19.1536,
+       -96.6352
+      ],
+      [
+       19.17,
+       -96.13
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "acapulco",
+   "name": "Acapulco",
+   "country": "México",
+   "coords": [
+    16.85,
+    -99.82
+   ],
+   "tier": 3,
+   "home": false,
+   "rival": null,
+   "interior": [
+    {
+     "id": "taxco",
+     "name": "Taxco",
+     "coords": [
+      18.55,
+      -99.6
+     ],
+     "material": "plata",
+     "via": [
+      [
+       18.55,
+       -99.6
+      ],
+      [
+       18.2744,
+       -99.6962
+      ],
+      [
+       17.9967,
+       -99.7764
+      ],
+      [
+       17.7154,
+       -99.829
+      ],
+      [
+       17.43,
+       -99.8497
+      ],
+      [
+       17.141,
+       -99.8428
+      ],
+      [
+       16.85,
+       -99.82
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "lahabana",
+   "name": "La Habana",
+   "country": "Cuba",
+   "coords": [
+    23.11,
+    -82.37
+   ],
+   "tier": 1,
+   "home": false,
+   "rival": "Cofradía del Caribe",
+   "interior": [
+    {
+     "id": "matanzas",
+     "name": "Matanzas",
+     "coords": [
+      23.04,
+      -81.57
+     ],
+     "material": "azucar",
+     "via": [
+      [
+       23.04,
+       -81.57
+      ],
+      [
+       23.1114,
+       -81.6981
+      ],
+      [
+       23.1669,
+       -81.8276
+      ],
+      [
+       23.1945,
+       -81.9595
+      ],
+      [
+       23.1902,
+       -82.0943
+      ],
+      [
+       23.1581,
+       -82.2314
+      ],
+      [
+       23.11,
+       -82.37
+      ]
+     ]
+    },
+    {
+     "id": "pinar",
+     "name": "Pinar del Río",
+     "coords": [
+      22.41,
+      -83.7
+     ],
+     "material": "tabaco",
+     "via": [
+      [
+       22.41,
+       -83.7
+      ],
+      [
+       22.4736,
+       -83.4504
+      ],
+      [
+       22.5514,
+       -83.2083
+      ],
+      [
+       22.6538,
+       -82.9791
+      ],
+      [
+       22.7847,
+       -82.7649
+      ],
+      [
+       22.9402,
+       -82.5637
+      ],
+      [
+       23.11,
+       -82.37
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "newyork",
+   "name": "Nueva York",
+   "country": "EEUU",
+   "coords": [
+    40.71,
+    -74.01
+   ],
+   "tier": 2,
+   "home": false,
+   "rival": "Compañía del Norte",
+   "interior": [
+    {
+     "id": "pittsburgh",
+     "name": "Pittsburgh",
+     "coords": [
+      40.44,
+      -79.99
+     ],
+     "material": "carbon",
+     "via": [
+      [
+       40.44,
+       -79.99
+      ],
+      [
+       40.4251,
+       -78.9906
+      ],
+      [
+       40.4262,
+       -77.992
+      ],
+      [
+       40.4551,
+       -76.9946
+      ],
+      [
+       40.5162,
+       -75.9986
+      ],
+      [
+       40.6051,
+       -75.004
+      ],
+      [
+       40.71,
+       -74.01
+      ]
+     ]
+    },
+    {
+     "id": "chicago",
+     "name": "Chicago",
+     "coords": [
+      41.88,
+      -87.63
+     ],
+     "material": "hierro",
+     "via": [
+      [
+       41.88,
+       -87.63
+      ],
+      [
+       41.6252,
+       -85.3651
+      ],
+      [
+       41.3865,
+       -83.0989
+      ],
+      [
+       41.1754,
+       -80.8303
+      ],
+      [
+       40.9965,
+       -78.5589
+      ],
+      [
+       40.8452,
+       -76.2851
+      ],
+      [
+       40.71,
+       -74.01
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "neworleans",
+   "name": "Nueva Orleans",
+   "country": "EEUU",
+   "coords": [
+    29.95,
+    -90.07
+   ],
+   "tier": 2,
+   "home": false,
+   "rival": null,
+   "interior": [
+    {
+     "id": "memphis",
+     "name": "Memphis",
+     "coords": [
+      35.15,
+      -90.05
+     ],
+     "material": "algodon",
+     "via": [
+      [
+       35.15,
+       -90.05
+      ],
+      [
+       34.2836,
+       -90.1133
+      ],
+      [
+       33.4171,
+       -90.1606
+      ],
+      [
+       32.5505,
+       -90.18
+      ],
+      [
+       31.6837,
+       -90.1673
+      ],
+      [
+       30.8169,
+       -90.1267
+      ],
+      [
+       29.95,
+       -90.07
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "sevilla",
+   "name": "Sevilla",
+   "country": "España",
+   "coords": [
+    37.39,
+    -5.99
+   ],
+   "tier": 3,
+   "home": false,
+   "rival": "Casa de Contratación",
+   "interior": [
+    {
+     "id": "riotinto",
+     "name": "Riotinto",
+     "coords": [
+      37.69,
+      -6.59
+     ],
+     "material": "hierro",
+     "via": [
+      [
+       37.69,
+       -6.59
+      ],
+      [
+       37.5863,
+       -6.5168
+      ],
+      [
+       37.497,
+       -6.4365
+      ],
+      [
+       37.4327,
+       -6.3437
+      ],
+      [
+       37.397,
+       -6.2365
+      ],
+      [
+       37.3863,
+       -6.1168
+      ],
+      [
+       37.39,
+       -5.99
+      ]
+     ]
+    },
+    {
+     "id": "jerez",
+     "name": "Jerez",
+     "coords": [
+      36.68,
+      -6.14
+     ],
+     "material": "vino",
+     "via": [
+      [
+       36.68,
+       -6.14
+      ],
+      [
+       36.7859,
+       -6.0563
+      ],
+      [
+       36.8952,
+       -5.9883
+      ],
+      [
+       37.0102,
+       -5.9476
+      ],
+      [
+       37.1319,
+       -5.9383
+      ],
+      [
+       37.2593,
+       -5.9563
+      ],
+      [
+       37.39,
+       -5.99
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "barcelona",
+   "name": "Barcelona",
+   "country": "España",
+   "coords": [
+    41.38,
+    2.18
+   ],
+   "tier": 3,
+   "home": false,
+   "rival": null,
+   "interior": [
+    {
+     "id": "zaragoza_es",
+     "name": "Zaragoza",
+     "coords": [
+      41.65,
+      -0.89
+     ],
+     "material": "lana",
+     "via": [
+      [
+       41.65,
+       -0.89
+      ],
+      [
+       41.5452,
+       -0.3836
+      ],
+      [
+       41.4565,
+       0.1242
+      ],
+      [
+       41.3955,
+       0.6345
+      ],
+      [
+       41.3665,
+       1.1476
+      ],
+      [
+       41.3652,
+       1.6631
+      ],
+      [
+       41.38,
+       2.18
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "liverpool",
+   "name": "Liverpool",
+   "country": "Reino Unido",
+   "coords": [
+    53.41,
+    -2.99
+   ],
+   "tier": 3,
+   "home": false,
+   "rival": "Compañía del Norte",
+   "interior": [
+    {
+     "id": "manchester",
+     "name": "Mánchester",
+     "coords": [
+      53.48,
+      -2.24
+     ],
+     "material": "algodon",
+     "via": [
+      [
+       53.48,
+       -2.24
+      ],
+      [
+       53.5281,
+       -2.3706
+      ],
+      [
+       53.5601,
+       -2.4997
+      ],
+      [
+       53.5645,
+       -2.6262
+      ],
+      [
+       53.5368,
+       -2.7497
+      ],
+      [
+       53.4814,
+       -2.8706
+      ],
+      [
+       53.41,
+       -2.99
+      ]
+     ]
+    },
+    {
+     "id": "gales",
+     "name": "Gales (carbón)",
+     "coords": [
+      51.62,
+      -3.94
+     ],
+     "material": "carbon",
+     "via": [
+      [
+       51.62,
+       -3.94
+      ],
+      [
+       51.8902,
+       -3.7287
+      ],
+      [
+       52.1679,
+       -3.5315
+      ],
+      [
+       52.4587,
+       -3.359
+      ],
+      [
+       52.7646,
+       -3.2149
+      ],
+      [
+       53.0835,
+       -3.0953
+      ],
+      [
+       53.41,
+       -2.99
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "amsterdam",
+   "name": "Ámsterdam",
+   "country": "P. Bajos",
+   "coords": [
+    52.37,
+    4.9
+   ],
+   "tier": 3,
+   "home": false,
+   "rival": null,
+   "interior": [
+    {
+     "id": "ruhr",
+     "name": "Cuenca del Ruhr",
+     "coords": [
+      51.45,
+      7.01
+     ],
+     "material": "hierro",
+     "via": [
+      [
+       51.45,
+       7.01
+      ],
+      [
+       51.6583,
+       6.6823
+      ],
+      [
+       51.8519,
+       6.3482
+      ],
+      [
+       52.02,
+       6.003
+      ],
+      [
+       52.1586,
+       5.6449
+      ],
+      [
+       52.2717,
+       5.2756
+      ],
+      [
+       52.37,
+       4.9
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "canton",
+   "name": "Cantón",
+   "country": "China",
+   "coords": [
+    23.13,
+    113.26
+   ],
+   "tier": 4,
+   "home": false,
+   "rival": "Compañía de las Indias",
+   "interior": [
+    {
+     "id": "hangzhou",
+     "name": "Hangzhou",
+     "coords": [
+      30.27,
+      120.15
+     ],
+     "material": "seda",
+     "via": [
+      [
+       30.27,
+       120.15
+      ],
+      [
+       29.1217,
+       118.9585
+      ],
+      [
+       27.9622,
+       117.7786
+      ],
+      [
+       26.7833,
+       116.6186
+      ],
+      [
+       25.5822,
+       115.4819
+      ],
+      [
+       24.3617,
+       114.3652
+      ],
+      [
+       23.13,
+       113.26
+      ]
+     ]
+    },
+    {
+     "id": "fujian",
+     "name": "Fujian",
+     "coords": [
+      26.07,
+      119.3
+     ],
+     "material": "te",
+     "via": [
+      [
+       26.07,
+       119.3
+      ],
+      [
+       25.6339,
+       118.2671
+      ],
+      [
+       25.1834,
+       117.2412
+      ],
+      [
+       24.7079,
+       116.2275
+      ],
+      [
+       24.2034,
+       115.2279
+      ],
+      [
+       23.6739,
+       114.2404
+      ],
+      [
+       23.13,
+       113.26
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "calcuta",
+   "name": "Calcuta",
+   "country": "India",
+   "coords": [
+    22.57,
+    88.36
+   ],
+   "tier": 4,
+   "home": false,
+   "rival": "Compañía de las Indias",
+   "interior": [
+    {
+     "id": "varanasi",
+     "name": "Benarés",
+     "coords": [
+      25.32,
+      82.97
+     ],
+     "material": "especias",
+     "via": [
+      [
+       25.32,
+       82.97
+      ],
+      [
+       24.8082,
+       83.8411
+      ],
+      [
+       24.3108,
+       84.7194
+      ],
+      [
+       23.8381,
+       85.6105
+      ],
+      [
+       23.3941,
+       86.5161
+      ],
+      [
+       22.9749,
+       87.4344
+      ],
+      [
+       22.57,
+       88.36
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "manila",
+   "name": "Manila",
+   "country": "Filipinas",
+   "coords": [
+    14.6,
+    120.98
+   ],
+   "tier": 4,
+   "home": false,
+   "rival": "Galeón de Manila",
+   "interior": [
+    {
+     "id": "cebu",
+     "name": "Cebú",
+     "coords": [
+      10.32,
+      123.9
+     ],
+     "material": "especias",
+     "via": [
+      [
+       10.32,
+       123.9
+      ],
+      [
+       11.0671,
+       123.4629
+      ],
+      [
+       11.8052,
+       123.0125
+      ],
+      [
+       12.5276,
+       122.5391
+      ],
+      [
+       13.2319,
+       122.0392
+      ],
+      [
+       13.9205,
+       121.5162
+      ],
+      [
+       14.6,
+       120.98
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "riodejaneiro",
+   "name": "Río de Janeiro",
+   "country": "Brasil",
+   "coords": [
+    -22.91,
+    -43.17
+   ],
+   "tier": 2,
+   "home": false,
+   "rival": null,
+   "interior": [
+    {
+     "id": "ouropreto",
+     "name": "Ouro Preto",
+     "coords": [
+      -20.39,
+      -43.51
+     ],
+     "material": "oro_m",
+     "via": [
+      [
+       -20.39,
+       -43.51
+      ],
+      [
+       -20.818,
+       -43.5128
+      ],
+      [
+       -21.2439,
+       -43.4997
+      ],
+      [
+       -21.666,
+       -43.4589
+      ],
+      [
+       -22.0839,
+       -43.3863
+      ],
+      [
+       -22.498,
+       -43.2861
+      ],
+      [
+       -22.91,
+       -43.17
+      ]
+     ]
+    },
+    {
+     "id": "saopaulo",
+     "name": "São Paulo",
+     "coords": [
+      -23.55,
+      -46.63
+     ],
+     "material": "cafe",
+     "via": [
+      [
+       -23.55,
+       -46.63
+      ],
+      [
+       -23.5023,
+       -46.0424
+      ],
+      [
+       -23.4389,
+       -45.4578
+      ],
+      [
+       -23.348,
+       -44.8782
+      ],
+      [
+       -23.2255,
+       -44.3044
+      ],
+      [
+       -23.0757,
+       -43.7358
+      ],
+      [
+       -22.91,
+       -43.17
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "callao",
+   "name": "El Callao",
+   "country": "Perú",
+   "coords": [
+    -12.06,
+    -77.15
+   ],
+   "tier": 3,
+   "home": false,
+   "rival": "Virreinato del Perú",
+   "interior": [
+    {
+     "id": "potosi",
+     "name": "Potosí",
+     "coords": [
+      -19.58,
+      -65.75
+     ],
+     "material": "plata",
+     "via": [
+      [
+       -19.58,
+       -65.75
+      ],
+      [
+       -18.2766,
+       -67.617
+      ],
+      [
+       -16.9866,
+       -69.4928
+      ],
+      [
+       -15.7198,
+       -71.3839
+      ],
+      [
+       -14.4799,
+       -73.2928
+      ],
+      [
+       -13.2632,
+       -75.217
+      ],
+      [
+       -12.06,
+       -77.15
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "luanda",
+   "name": "Luanda",
+   "country": "Angola",
+   "coords": [
+    -8.84,
+    13.23
+   ],
+   "tier": 3,
+   "home": false,
+   "rival": null,
+   "interior": [
+    {
+     "id": "congo",
+     "name": "Interior del Congo",
+     "coords": [
+      -6.0,
+      15.0
+     ],
+     "material": "especias",
+     "via": [
+      [
+       -6.0,
+       15.0
+      ],
+      [
+       -6.4416,
+       14.6541
+      ],
+      [
+       -6.8917,
+       14.3218
+      ],
+      [
+       -7.3565,
+       14.0132
+      ],
+      [
+       -7.8384,
+       13.7318
+      ],
+      [
+       -8.3349,
+       13.4741
+      ],
+      [
+       -8.84,
+       13.23
+      ]
+     ]
+    }
+   ]
+  }
+ ]
 }

@@ -1,5 +1,5 @@
 // ============================================================
-// ROUTES PANEL — list active circuits + create a new route
+// ROUTES PANEL — maritime routes between ports
 // ============================================================
 
 import { useState } from 'react';
@@ -13,27 +13,27 @@ export default function RoutesPanel() {
   const [shipIds, setShipIds] = useState([]);
   const [auto, setAuto] = useState(true);
 
-  const zoneName = (id) => state.zones.find((z) => z.id === id)?.name || id;
+  const portName = (id) => state.ports.find((p) => p.id === id)?.name || id;
   const idleShips = state.ships.filter((s) => s.status === 'idle');
   const toggleStop = (id) => setStops((p) => p.includes(id) ? p.filter((x) => x !== id) : [...p, id]);
   const toggleShip = (id) => setShipIds((p) => p.includes(id) ? p.filter((x) => x !== id) : [...p, id]);
 
   const create = () => {
-    dispatch({ type: 'CREATE_ROUTE', stops, shipIds, auto, now: Date.now() });
+    dispatch({ type: 'CREATE_SEA_ROUTE', stops, shipIds, auto, now: Date.now() });
     setCreating(false); setStops([]); setShipIds([]); setAuto(true);
   };
 
   if (creating) {
     return (
-      <BottomSheet title="🧭 Nueva ruta" subtitle="Elige paradas (en orden) y barcos" onClose={() => setCreating(false)}
-        footer={<button className="btn primary block" disabled={stops.length < 2 || shipIds.length === 0} onClick={create}>Crear ruta ({stops.length} paradas, {shipIds.length} barcos)</button>}>
-        <div className="section-label">Paradas del circuito</div>
-        <p className="muted small">Toca en el orden que quieras recorrer. El barco compra barato y vende caro en cada parada.</p>
-        {state.zones.map((z, i) => {
-          const order = stops.indexOf(z.id);
+      <BottomSheet title="🧭 Nueva ruta marítima" subtitle="Elige puertos (en orden) y barcos" onClose={() => setCreating(false)}
+        footer={<button className="btn primary block" disabled={stops.length < 2 || shipIds.length === 0} onClick={create}>Crear ruta ({stops.length} puertos, {shipIds.length} barcos)</button>}>
+        <div className="section-label">Puertos del circuito</div>
+        <p className="muted small">El barco compra barato y vende caro en cada puerto del circuito.</p>
+        {state.ports.map((p) => {
+          const order = stops.indexOf(p.id);
           return (
-            <div key={z.id} className={`select-row ${order >= 0 ? 'sel' : ''}`} onClick={() => toggleStop(z.id)}>
-              <span>{order >= 0 ? `${order + 1}️⃣` : '⬜'} {z.kind === 'barrio' ? '🏘️' : '⛰️'} {z.name} <span className="muted small">{state.resources[z.material]?.icon}</span></span>
+            <div key={p.id} className={`select-row ${order >= 0 ? 'sel' : ''}`} onClick={() => toggleStop(p.id)}>
+              <span>{order >= 0 ? `${order + 1}️⃣` : '⬜'} ⚓ {p.name} <span className="muted small">{p.country}</span></span>
             </div>
           );
         })}
@@ -44,7 +44,7 @@ export default function RoutesPanel() {
           </div>
         ))}
         <div className="row" style={{ marginTop: 8 }}>
-          <span>🤖 Comercio automático (compra barato / vende caro)</span>
+          <span>🤖 Comercio automático</span>
           <button className={`btn small ${auto ? 'primary' : ''}`} onClick={() => setAuto((a) => !a)}>{auto ? 'Sí' : 'No'}</button>
         </div>
       </BottomSheet>
@@ -52,21 +52,21 @@ export default function RoutesPanel() {
   }
 
   return (
-    <BottomSheet title="🧭 Rutas comerciales" subtitle={`${state.routes.length} ruta(s) activa(s)`} onClose={() => dispatch({ type: 'CLOSE_SHEET' })}
+    <BottomSheet title="🧭 Rutas marítimas" subtitle={`${state.seaRoutes.length} ruta(s) activa(s)`} onClose={() => dispatch({ type: 'CLOSE_SHEET' })}
       footer={<button className="btn primary block" disabled={idleShips.length === 0} onClick={() => setCreating(true)}>＋ Nueva ruta {idleShips.length === 0 ? '(necesitas un barco libre)' : ''}</button>}>
-      {state.routes.length === 0 && <p className="muted small">Aún no tienes rutas. Crea un circuito entre zonas para que tus barcos comercien solos.</p>}
-      {state.routes.map((rt) => (
+      {state.seaRoutes.length === 0 && <p className="muted small">Sin rutas. Crea un circuito entre puertos para comerciar en automático.</p>}
+      {state.seaRoutes.map((rt) => (
         <div key={rt.id} className="card" style={{ marginBottom: 8 }}>
           <div className="card-head">
             <span className="card-icon">🧭</span>
             <div>
               <div className="card-name">{rt.name}</div>
-              <div className="card-desc">{rt.stops.map(zoneName).join(' → ')}</div>
+              <div className="card-desc">{rt.stops.map(portName).join(' → ')}</div>
             </div>
           </div>
           <div className="card-meta">{rt.shipIds.length} barco(s) · {rt.auto ? '🤖 automático' : '✋ manual'}</div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button className="btn small" onClick={() => dispatch({ type: 'TOGGLE_ROUTE_AUTO', routeId: rt.id })}>{rt.auto ? 'Pausar auto' : 'Activar auto'}</button>
+            <button className="btn small" onClick={() => dispatch({ type: 'TOGGLE_ROUTE_AUTO', routeId: rt.id })}>{rt.auto ? 'Pausar' : 'Activar'}</button>
             <button className="btn small danger" onClick={() => dispatch({ type: 'DELETE_ROUTE', routeId: rt.id })}>Disolver</button>
           </div>
         </div>

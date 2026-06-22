@@ -20,7 +20,7 @@ export function DuelPanel() {
 
   return (
     <BottomSheet
-      title={`⚔️ Duelo por ${conflict.zoneName}`}
+      title={`⚔️ Duelo por ${conflict.portName}`}
       subtitle={`${conflict.terrain === 'coast' ? 'Combate costero' : 'Mar abierto'} · guarnición rival ~${conflict.garrison}`}
       onClose={() => dispatch({ type: 'CLOSE_SHEET' })}
       footer={

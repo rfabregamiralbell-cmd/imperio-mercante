@@ -1,95 +1,80 @@
 // ============================================================
-// INITIAL STATE — Imperio Mercante
-// The world is a flat list of "zones" (barrios inside cities,
-// comarcas outside). Controlling a zone yields its material.
-// Three pillars: Influencia · Comercio · Poder militar.
+// INITIAL STATE — Imperio Mercante (logística en dos capas)
+// TIERRA: nodos interiores → puerto por una VÍA que controlas con
+//   influencia + mantenimiento. MAR: rutas entre puertos (defender/atacar).
 // ============================================================
 
 import world from '../config/world_config.json';
 import { seedMarket } from '../engines/marketEngine.js';
 
-// Flatten world config into a single zones array with owner + city link.
-function buildZones() {
-  const zones = [];
-  const addMarket = (z) => { z.market = seedMarket(z); z.influence = z.owner === 'player' ? 0.3 : 0; return z; };
-  world.cities.forEach((city) => {
-    (city.barrios || []).forEach((b) => {
-      zones.push(addMarket({
-        id: b.id,
-        name: b.name,
-        kind: 'barrio',
-        cityId: city.id,
-        cityName: city.name,
-        coords: city.coords,
-        tier: city.tier,
-        material: b.material,
-        richness: b.richness,
-        owner: b.rival ? b.rival : (city.home ? 'player' : null),
-        home: !!city.home,
-      }));
+// Flatten ports and interior nodes into game entities.
+function buildWorld() {
+  const ports = [];
+  const nodes = [];   // interior production nodes, each linked to one port by a vía
+  world.ports.forEach((p) => {
+    ports.push({
+      id: p.id, name: p.name, country: p.country, coords: p.coords, tier: p.tier,
+      home: !!p.home,
+      owner: p.home ? 'player' : (p.rival || null),
+      influence: p.home ? 0.4 : 0,
+      market: seedMarket({ material: null, tier: p.tier }),
+    });
+    (p.interior || []).forEach((n) => {
+      nodes.push({
+        id: n.id, name: n.name, coords: n.coords, material: n.material,
+        portId: p.id, via: n.via,
+        // The player "owns/works" the vía: 0..1. Owning it routes the node's
+        // production into your port. Requires upkeep each cycle.
+        control: p.home ? 0.5 : 0,
+        owner: null,             // who controls the vía (player/rival/null)
+        upkeep: 2 + (p.tier || 1),
+      });
     });
   });
-  world.comarcas.forEach((c) => {
-    zones.push(addMarket({
-      id: c.id,
-      name: c.name,
-      kind: 'comarca',
-      cityId: null,
-      cityName: null,
-      coords: c.coords,
-      tier: c.tier,
-      material: c.material,
-      richness: c.richness,
-      owner: c.rival ? c.rival : null,
-      home: false,
-    }));
-  });
-  return zones;
+  return { ports, nodes };
 }
 
 export function createInitialState() {
+  const { ports, nodes } = buildWorld();
   return {
-    version: '1.0.0',
+    version: '3.0.0',
     tick: 0,
+    governor: { name: 'Gobernador', league: 1 },
 
-    governor: { name: 'Gobernador', league: 1, renown: 0 },
-
-    // Capital. Materials live in the player's "warehouse" (cargo on hand),
-    // bought and sold across zones. Influence is now per-zone (commercial weight).
     resources: {
-      oro:        { amount: 1000, icon: '🪙', label: 'Oro' },
-      madera:     { amount: 40,   icon: '🪵', label: 'Madera' },
-      hierro:     { amount: 15,   icon: '⛓️', label: 'Hierro' },
-      tabaco:     { amount: 0,    icon: '🍂', label: 'Tabaco' },
-      azucar:     { amount: 0,    icon: '🍯', label: 'Azúcar' },
-      algodon:    { amount: 0,    icon: '🧺', label: 'Algodón' },
-      especias:   { amount: 0,    icon: '🌶️', label: 'Especias' },
-      plata:      { amount: 0,    icon: '⚪', label: 'Plata' },
-      seda:       { amount: 0,    icon: '🧵', label: 'Seda' },
-      vino:       { amount: 0,    icon: '🍷', label: 'Vino' },
-      pescado:    { amount: 0,    icon: '🐟', label: 'Pescado' },
+      oro:     { amount: 1500, icon: '🪙', label: 'Oro' },
+      madera:  { amount: 40,   icon: '🪵', label: 'Madera' },
+      hierro:  { amount: 15,   icon: '⛓️', label: 'Hierro' },
+      carbon:  { amount: 0,    icon: '⚫', label: 'Carbón' },
+      tabaco:  { amount: 0,    icon: '🍂', label: 'Tabaco' },
+      azucar:  { amount: 0,    icon: '🍯', label: 'Azúcar' },
+      algodon: { amount: 0,    icon: '🧺', label: 'Algodón' },
+      cafe:    { amount: 0,    icon: '☕', label: 'Café' },
+      especias:{ amount: 0,    icon: '🌶️', label: 'Especias' },
+      plata:   { amount: 0,    icon: '⚪', label: 'Plata' },
+      oro_m:   { amount: 0,    icon: '🟡', label: 'Oro en bruto' },
+      seda:    { amount: 0,    icon: '🧵', label: 'Seda' },
+      te:      { amount: 0,    icon: '🍵', label: 'Té' },
+      vino:    { amount: 0,    icon: '🍷', label: 'Vino' },
+      lana:    { amount: 0,    icon: '🐑', label: 'Lana' },
     },
 
-    zones: buildZones(),
+    ports,
+    nodes,
 
     ships: [],
     shipCounter: 0,
 
-    // Trade routes: circuits with stops; ships assigned; auto buy-low/sell-high.
-    routes: [],
+    seaRoutes: [],     // maritime routes between ports
     routeCounter: 0,
 
-    // Credit: outstanding loans (principal + interest).
     loans: [],
     loanCounter: 0,
 
-    // Pending conflicts when contesting a rival zone (auto/2D duel).
     conflicts: [],
 
-    map: { view: 'world', selectedZoneId: null },
-
-    ui: { openSheet: null, selectedShipId: null, conflictId: null, routeDraftId: null },
-
+    map: { view: 'world', selectedPortId: null, selectedNodeId: null },
+    ui: { openSheet: null, conflictId: null },
     notifications: [],
   };
 }

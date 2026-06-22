@@ -1,5 +1,5 @@
 // ============================================================
-// APP — Imperio Mercante root (trade model)
+// APP — Imperio Mercante (logística dos capas)
 // ============================================================
 
 import { useGame } from './state/GameContext.jsx';
@@ -11,7 +11,8 @@ import WorldPanel from './components/panels/WorldPanel.jsx';
 import RoutesPanel from './components/panels/RoutesPanel.jsx';
 import FleetPanel from './components/panels/FleetPanel.jsx';
 import BankPanel from './components/panels/BankPanel.jsx';
-import ZonePanel from './components/panels/ZonePanel.jsx';
+import PortPanel from './components/panels/PortPanel.jsx';
+import NodePanel from './components/panels/NodePanel.jsx';
 import { DuelPanel, BattleReport } from './components/panels/WorldPanels.jsx';
 
 export default function App() {
@@ -28,7 +29,8 @@ export default function App() {
       {sheet === 'routes' && <RoutesPanel />}
       {sheet === 'fleet' && <FleetPanel />}
       {sheet === 'bank' && <BankPanel />}
-      {sheet === 'zone' && <ZonePanel />}
+      {sheet === 'port' && <PortPanel />}
+      {sheet === 'node' && <NodePanel />}
       {sheet === 'duel' && <DuelPanel />}
 
       <BattleReport />
