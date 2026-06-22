@@ -22,7 +22,7 @@ function buildWorld() {
     (p.interior || []).forEach((n) => {
       nodes.push({
         id: n.id, name: n.name, coords: n.coords, material: n.material,
-        portId: p.id, via: n.via,
+        portId: p.id, via: n.via, arteryWeight: n.arteryWeight || 2.5,
         // The player "owns/works" the vía: 0..1. Owning it routes the node's
         // production into your port. Requires upkeep each cycle.
         control: p.home ? 0.5 : 0,

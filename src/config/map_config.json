@@ -1,5 +1,8 @@
 {
-  "tileLayer": { "url": "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" },
+  "tileLayer": {
+    "url": "https://{s}.basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}{r}.png",
+    "variant": "light"
+  },
   "defaultZoom": 3,
   "minZoom": 2,
   "maxZoom": 12,

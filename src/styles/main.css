@@ -159,5 +159,11 @@ html, body, #root { width: 100%; height: 100%; overflow: hidden; background: var
 .modal p { font-family: var(--font-body); font-size: 14px; line-height: 1.5; margin-bottom: 16px; }
 
 /* Interior node pins (smaller, square-ish) */
-.pin.node { width: 26px; height: 26px; font-size: 13px; border-color: #8a6a3a; background: #1a2632; }
+.pin.node { width: 26px; height: 26px; font-size: 13px; border-color: #8a6a3a; background: #1a2632; color: #fff; }
 .pin.node.owned { border-color: var(--brass-bright); box-shadow: 0 0 8px var(--brass); }
+
+/* On the light basemap, give all pins a solid dark core for contrast */
+.pin { background: #14242f; color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
+.pin.free { border-color: #2a7; border-style: dashed; }
+.pin.rival { border-color: var(--bad); }
+.pin.player { border-color: var(--player); box-shadow: 0 0 10px rgba(244,196,48,0.7); }
