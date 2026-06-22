@@ -29,7 +29,7 @@ export default function PortPanel() {
       onClose={() => dispatch({ type: 'SELECT_PORT', id: null })}
     >
       {nodes.length > 0 && (
-        <p className="muted small">🚉 Al abrir este puerto se revelan sus {nodes.length} vía(s) interior(es) en el mapa: {nodes.map((n) => `${state.resources[n.material]?.icon}${n.name}`).join(' · ')}. Tócalas para trabajarlas e iluminarlas con tu color.</p>
+        <p className="muted small">🚉 {nodes.length} vía(s) interior(es) llegan a este puerto: {nodes.map((n) => `${state.resources[n.material]?.icon}${n.name}`).join(' · ')}. Tócalas en el mapa para ver qué transportan y trabajarlas.</p>
       )}
 
       <div className="row">

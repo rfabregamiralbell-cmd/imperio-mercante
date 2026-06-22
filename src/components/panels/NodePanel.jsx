@@ -1,5 +1,6 @@
 // ============================================================
-// NODE PANEL — interior production node: work the vía to own it
+// VÍA PANEL — al tocar una vía: recurso que transporta, control,
+// trabajar la vía, y botón al mercado del puerto.
 // ============================================================
 
 import { useGame } from '../../state/GameContext.jsx';
@@ -18,11 +19,16 @@ export default function NodePanel() {
 
   return (
     <BottomSheet
-      title={`🚉 ${n.name}`}
-      subtitle={`Vía interior → ${port?.name} · produce ${mat?.icon} ${mat?.label}`}
+      title={`🚉 Vía de ${n.name}`}
+      subtitle={`Transporta ${mat?.icon} ${mat?.label} → ${port?.name}`}
       onClose={() => dispatch({ type: 'SELECT_NODE', id: null })}
+      footer={
+        <button className="btn block" onClick={() => dispatch({ type: 'SELECT_PORT', id: port.id })}>
+          ⚓ Ir al mercado de {port?.name}
+        </button>
+      }
     >
-      <div className="row"><span className="muted">Material</span><span>{mat?.icon} {mat?.label}</span></div>
+      <div className="row"><span className="muted">Recurso transportado</span><span>{mat?.icon} {mat?.label}</span></div>
       <div className="row"><span className="muted">Puerto de salida</span><span>{port?.name} {portMine ? '(tuyo)' : port?.owner ? `(${port.owner})` : '(libre)'}</span></div>
       <div className="row"><span className="muted">Control de la vía</span><span className={owned ? 'good' : 'warn'}>{control}%</span></div>
       <div className="bar"><div className={`bar-fill ${owned ? 'good' : ''}`} style={{ width: `${control}%` }} /></div>
@@ -34,8 +40,8 @@ export default function NodePanel() {
       {portMine && (
         <>
           <p className="muted small" style={{ marginTop: 10 }}>
-            Invierte para reforzar la vía. Al llegar al 50% la posees y su producción fluye a {port?.name} cada ciclo
-            (mientras puedas pagar el mantenimiento).
+            Invierte para reforzar la vía. Al 50% la posees: se ilumina con tu color y su {mat?.label} fluye a {port?.name} cada ciclo
+            (mientras pagues el mantenimiento).
           </p>
           <button className="btn primary block" style={{ marginTop: 10 }}
             disabled={state.resources.oro.amount < cost || control >= 100}
