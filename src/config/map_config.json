@@ -18,5 +18,9 @@
   "railwayLayer": {
     "url": "https://{s}.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png",
     "attribution": "OpenRailwayMap"
+  },
+  "seaLayer": {
+    "url": "https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png",
+    "attribution": "OpenSeaMap"
   }
 }

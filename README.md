@@ -26,6 +26,9 @@ npm run build
 Navegación: **Mundo · Rutas · Flota · Banca**. Toca un puerto ⚓ para su mercado; un nodo 🚉 para trabajar su vía.
 
 
+## Capas del mapa
+Selector flotante de capas: **🚆 Tren** (OpenRailwayMap, vías reales), **⚓ Mar** (OpenSeaMap, señalización náutica real) y **🧭 Corredores** (rutas marítimas históricas entre puertos). Las capas reales se ven al ejecutar con internet.
+
 ## Vías reales
 La capa **OpenRailwayMap** se superpone al mapa base y dibuja las vías ferroviarias **reales** del mundo (se ven al ejecutar con internet). Encima, el juego coloca los **puertos** (puntos) y los **tramos jugables** que tu compañía controla, iluminados con tu color. Así las vías son reales y tú gestionas tu red encima.
 
